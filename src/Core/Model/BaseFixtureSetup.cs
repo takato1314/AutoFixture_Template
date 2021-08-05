@@ -1,95 +1,55 @@
 ﻿using System;
 using System.Diagnostics.CodeAnalysis;
-using System.Linq;
-using Microsoft.Extensions.DependencyInjection;
+using EnsureThat;
 
 namespace AutoFixture.Extensions
 {
     /// <summary>
-    /// Default implementation of <see cref="IFixtureSetup"/>
+    /// Default implementation of <see cref="IFixtureSetup{T}"/>
     /// </summary>
-    public abstract class BaseFixtureSetup<TFixture> : IFixtureSetup where TFixture : class
+    public abstract class BaseFixtureSetup<T> : IFixtureSetup<T> where T : class
     {
         /// <inheritdoc cref="BaseFixtureSetup{TFixture}"/>
         protected BaseFixtureSetup(
             [DisallowNull] IFixture fixture)
         {
-            Dependencies = new FixtureDependencies(this, fixture);
-            ServiceCollection = new ServiceCollection();
+            fixture.Customize(this);
         }
 
         #region Properties
 
-        /// <summary>
-        /// Service provider for the dependency types
-        /// </summary>
-        // TODO: Implement configure pattern to get a static instance of FixtureConfiguration so that we can inject a single instance of ServiceCollection from DI provider.
-        public IServiceProvider? ServiceProvider { get; protected set; } = null;
+        /// <inheritdoc cref="IFixtureSetup{T}.Object" />
+        public T Object { get; protected set; } = null!;
 
-        /// <summary>
-        /// The service container registry for dependency types
-        /// </summary>
-        public IServiceCollection ServiceCollection { get; }
-
-        /// <inheritdoc cref="IFixtureSetup.Object"/>
-        public TFixture Object { get; protected set; } = null!;
-
-        dynamic IFixtureSetup.Object
+        T IFixtureSetup<T>.Object
         {
             get => Object;
             set => Object = value;
         }
 
-        /// <inheritdoc />
-        public FixtureDependencies Dependencies { get; set; }
-
         #endregion
 
-        /// <inheritdoc cref="IFixtureSetup.Customize"/>
-        public void Customize(IFixture fixture)
+        /// <inheritdoc />
+        public virtual void Customize(IFixture fixture)
         {
-            if (fixture == null)
-            {
-                throw new ArgumentNullException(nameof(fixture));
-            }
+            Ensure.Any.IsNotNull(fixture);
 
-            Dependencies.Fixture = fixture;
-            Dependencies.Register(this);
             Register(fixture);
-
-            // Should get from ServiceProvider when desired
-            if (ServiceCollection.Any())
-            {
-                ServiceProvider = ServiceCollection.BuildServiceProvider();
-            }
             Object = CreateObject(fixture);
         }
 
         /// <inheritdoc />
-        public virtual void Inject<T>(IFixture fixture, T item)
+        public void Inject(IFixture fixture, T item)
         {
             if (fixture == null)
             {
                 throw new ArgumentNullException(nameof(fixture));
             }
-
-            Dependencies.Fixture = fixture;
-            Dependencies.Update(item);
-            Object = fixture.Create<TFixture>();
+            
+            Object = item;
         }
 
         #region Private
-
-        private TFixture GetObjectFromServiceCollection()
-        {
-            if (ServiceProvider == null)
-            {
-                throw new InvalidOperationException($"No provided {nameof(IServiceProvider)} exists to derived from.");
-            }
-
-            var instance = ServiceProvider.GetService<TFixture>();
-            return instance;
-        }
 
         /// <summary>
         /// Register any dependencies and fixtures for this <seealso cref="IFixtureSetup"/>
@@ -100,12 +60,12 @@ namespace AutoFixture.Extensions
         }
 
         /// <summary>
-        /// Defines the expected <see cref="Object"/> instance of current <see cref="IFixtureSetup"/> fixture.
+        /// Defines the expected <see cref="Object"/> instance of current fixture.
         /// See examples for various ways for implementing this.
         /// </summary>
-        protected virtual TFixture CreateObject(IFixture fixture)
+        protected virtual T CreateObject(IFixture fixture)
         {
-            Object = fixture.Create<TFixture>();
+            Object = fixture.Create<T>();
             return Object;
         }
 

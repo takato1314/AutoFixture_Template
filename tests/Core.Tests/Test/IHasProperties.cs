@@ -10,7 +10,7 @@ namespace AutoFixture.Extensions.Tests
         /// <summary>
         /// Normal string
         /// </summary>
-        string Text { get; set; }
+        string Name { get; set; }
 
         /// <summary>
         /// Normal integer
@@ -20,7 +20,7 @@ namespace AutoFixture.Extensions.Tests
         /// <summary>
         /// Default implementation for Guid
         /// </summary>
-        Guid ConcurrencyStamp => Guid.NewGuid();
+        Guid ConcurrencyStamp { get; set; }
 
         public string GetValue()
         {

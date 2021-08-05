@@ -7,7 +7,8 @@ using AutoFixture.Kernel;
 namespace AutoFixture.Extensions
 {
     /// <summary>
-    /// Factory method to declare a single <see cref="IFixture"/> for unit tests applications
+    /// Factory method to declare a single <see cref="IFixture"/> for unit tests applications. <br/>
+    /// See https://autofixture.github.io.
     /// </summary>
     public static class FixtureFactory
     {
@@ -22,7 +23,7 @@ namespace AutoFixture.Extensions
         }
 
         /// <summary>
-        /// Creates a customized <see cref="IFixture"/> instance for <see cref="IFixtureSetup"/>
+        /// Creates a customized <see cref="IFixture"/> instance for IFixture.
         /// </summary>
         public static IFixture CreateFixture()
         {
@@ -31,7 +32,7 @@ namespace AutoFixture.Extensions
             var defaultEngine = new FilteringRelays(ConcreteFilter);
 
             var fixture = new AutoFixture.Fixture(defaultEngine).Customize(
-                new AutoPopulatedMoqPropertiesCustomization());
+                new AutoPopulatedMoqCustomization());
             fixture.Behaviors.OfType<ThrowingRecursionBehavior>().ToList()
                 .ForEach(b => fixture.Behaviors.Remove(b));
             fixture.Behaviors.Add(new OmitOnRecursionBehavior());

@@ -5,10 +5,10 @@
     /// </summary>
     public static class BaseFixtureSetupExtensions
     {
-        /// <inheritdoc cref="BaseFixtureSetup{TFixture}.Inject{T}"/>
+        /// <inheritdoc cref="BaseFixtureSetup{TFixture}.Inject"/>
         public static void Inject<T>(
             this IFixture fixture,
-            IFixtureSetup fixtureSetup,
+            IFixtureSetup<T> fixtureSetup,
             T item)
         {
             fixtureSetup.Inject(fixture, item);
