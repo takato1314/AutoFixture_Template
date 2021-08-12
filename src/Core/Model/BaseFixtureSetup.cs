@@ -33,8 +33,6 @@ namespace AutoFixture.Extensions
         public virtual void Customize(IFixture fixture)
         {
             Ensure.Any.IsNotNull(fixture);
-
-            Register(fixture);
             Object = CreateObject(fixture);
         }
 
@@ -50,15 +48,7 @@ namespace AutoFixture.Extensions
         }
 
         #region Private
-
-        /// <summary>
-        /// Register any dependencies and fixtures for this <seealso cref="IFixtureSetup"/>
-        /// See examples for more details.
-        /// </summary>
-        protected virtual void Register(IFixture fixture)
-        {
-        }
-
+        
         /// <summary>
         /// Defines the expected <see cref="Object"/> instance of current fixture.
         /// See examples for various ways for implementing this.

@@ -8,10 +8,10 @@ namespace AutoFixture.Extensions
     /// A AutoFixture-xUnit attribute used for decorating unit test Theories.
     /// See https://blog.ploeh.dk/2011/03/18/EncapsulatingAutoFixtureCustomizations/
     /// </summary>
-    public class AutoDomainDataAttribute : AutoDataAttribute
+    public class AutoMoqDataAttribute : AutoDataAttribute
     {
-        /// <inheritdoc cref="AutoDomainDataAttribute"/>
-        public AutoDomainDataAttribute() : base(FixtureFactory.CreateFixture)
+        /// <inheritdoc cref="AutoMoqDataAttribute"/>
+        public AutoMoqDataAttribute() : base(FixtureFactory.CreateFixture)
         {
             lock (FixtureLock)
             {

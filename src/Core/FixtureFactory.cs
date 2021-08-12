@@ -1,5 +1,8 @@
-﻿using System.Linq;
+﻿using System;
+using System.Collections;
+using System.Linq;
 using System.Runtime.CompilerServices;
+using AutoFixture.AutoMoq;
 using AutoFixture.Kernel;
 
 [assembly: InternalsVisibleTo("AutoFixture.Extensions.Tests")]
@@ -31,9 +34,21 @@ namespace AutoFixture.Extensions
             bool ConcreteFilter(ISpecimenBuilder sb) => !(sb is MethodInvoker);
             var defaultEngine = new FilteringRelays(ConcreteFilter);
 
-            var fixture = new AutoFixture.Fixture(defaultEngine).Customize(
-                new AutoPopulatedMoqCustomization());
-            fixture.Behaviors.OfType<ThrowingRecursionBehavior>().ToList()
+            // Customizations
+            var fixture = new AutoFixture.Fixture(defaultEngine)
+                .Customize(new AutoPopulatedMoqCustomization());
+            var postprocessor = (Postprocessor)fixture.Customizations.Single(f => f is Postprocessor);
+            if (postprocessor.Command is CompositeSpecimenCommand command)
+            {
+                // Since we are using Virtuosity, we need to exclude virtual methods to be mock by default. 
+                var commands = ((ISpecimenCommand[])command.Commands);
+                var index = Array.IndexOf(commands, commands.Single(c => c is MockVirtualMethodsCommand));
+                commands[index] = commands[index + 1];
+            }
+
+            // Behaviors
+            fixture.Behaviors.OfType<ThrowingRecursionBehavior>()
+                .ToList()
                 .ForEach(b => fixture.Behaviors.Remove(b));
             fixture.Behaviors.Add(new OmitOnRecursionBehavior());
             

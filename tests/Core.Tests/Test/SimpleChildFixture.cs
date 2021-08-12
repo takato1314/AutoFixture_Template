@@ -13,45 +13,42 @@ namespace AutoFixture.Extensions.Tests
         public SimpleChildFixture(IFixture fixture) : base(fixture)
         {
         }
-        
-        /// <inheritdoc />
-        protected override void Register(IFixture fixture)
-        {
-            // Override default creation function above for these instances.
-            fixture.Register<IFixture, IHasProperties>(CreateObject);
-        }
     }
 
 
     public class SimpleChildFixtureTest
     {
-        [Theory, AutoDomainData]
+        [Theory, AutoMoqData]
         public Task CreateFixtures_TestEquivalency(IFixture fixture)
         {
             // Arrange
             var sut = new SimpleChildFixture(fixture);
-            
+
             // Act
+            var i0 = new SimpleChild();
             var i1 = sut.Object;
             var i2 = fixture.Create<SimpleChild>();
             var i3 = fixture.Create<IHasProperties>();
 
             // Assert
             i1.Should().NotBeNull();
-            Mock.Get(i1).Should().NotBeNull();
-            i1.Should().NotBeEquivalentTo(i2);
+            i0.Should().NotBeEquivalentTo(i1);
+            i0.Should().NotBeEquivalentTo(i2);
+            i0.Should().NotBeEquivalentTo(i3);
             i1.Should().NotBeEquivalentTo(i3);
+            i1.Should().NotBeEquivalentTo(i2);
             i2.Should().NotBeEquivalentTo(i3);
 
-            var actualType = i1.GetType();
-            i2.Should().BeOfType(actualType);
-            i3.Should().BeOfType(actualType);
+            Mock.Get(i1).Should().NotBeNull();
+            Mock.Get(i2).Should().NotBeNull();
+            i2.IsMock().Should().BeTrue();
+            i3.IsMock().Should().BeTrue();
 
             return Task.CompletedTask;
         }
         
-        [Theory, AutoDomainData]
-        public Task GetObject_ShouldReturnObjects(IFixture fixture)
+        [Theory, AutoMoqData]
+        public Task GetObject_ShouldReturnDifferentObjects(IFixture fixture)
         {
             // Arrange
             var sut = new SimpleChildFixture(fixture);
@@ -74,6 +71,8 @@ namespace AutoFixture.Extensions.Tests
             foreach (var instance in hasPropertiesList)
             {
                 instance.Should().NotBeNull();
+                instance.Should().NotBeEquivalentTo(i1);
+
                 instance.Name.Should().NotBe(i1.Name);
                 instance.Number.Should().NotBe(i1.Number);
                 instance.ConcurrencyStamp.Should().NotBe(i1.ConcurrencyStamp);
@@ -82,7 +81,7 @@ namespace AutoFixture.Extensions.Tests
             return Task.CompletedTask;
         }
 
-        [Theory, AutoDomainData]
+        [Theory, AutoMoqData]
         public Task TestInject_ShouldReturnInjectedObject(IFixture fixture)
         {
             // Arrange
@@ -98,11 +97,12 @@ namespace AutoFixture.Extensions.Tests
 
             // Assert
             var newObject = sut.Object;
-            Assert.Throws<ArgumentException>(() => Mock.Get(newObject));
             oldObject.Should().NotBeNull();
             newObject.Should().NotBeNull();
+            newObject.IsMock().Should().BeFalse();
+            newObject.Should().BeOfType<SimpleChild>();
             newObject.Should().NotBeEquivalentTo(oldObject);
-            newObject.Should().BeEquivalentTo(injected);
+            newObject.Should().BeSameAs(injected);
             newObject.Name.Should().Be("OverridenText");
             newObject.Number.Should().Be(111);
             newObject.ConcurrencyStamp.ToString().Should().Be("6f55a677-c447-45f0-8e71-95c7b73fa889");
@@ -110,7 +110,7 @@ namespace AutoFixture.Extensions.Tests
             return Task.CompletedTask;
         }
 
-        [Theory, AutoDomainData]
+        [Theory, AutoMoqData]
         public Task TestInject_AnotherWay_ShouldReturnInjectedObject(IFixture fixture)
         {
             // Arrange
@@ -126,9 +126,10 @@ namespace AutoFixture.Extensions.Tests
 
             // Assert
             var newObject = sut.Object;
-            Assert.Throws<ArgumentException>(() => Mock.Get(newObject));
             oldObject.Should().NotBeNull();
             newObject.Should().NotBeNull();
+            newObject.IsMock().Should().BeFalse();
+            newObject.Should().BeOfType<SimpleChild>();
             newObject.Should().NotBeEquivalentTo(oldObject);
             newObject.Should().BeSameAs(injected);
             newObject.Name.Should().Be("OverridenText");

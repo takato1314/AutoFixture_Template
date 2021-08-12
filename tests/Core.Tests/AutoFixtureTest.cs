@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Linq;
 using FluentAssertions;
 using Moq;
 using Xunit;
@@ -26,7 +27,7 @@ namespace AutoFixture.Extensions.Tests
             i1.Should().BeSameAs(i2);
         }
 
-        [Theory, AutoDomainData]
+        [Theory, AutoMoqData]
         public void GetFixture_MultipleInstances_ShouldReturnDifferentInstances(IFixture fixture)
         {
             // Different instances on other accessors
@@ -34,7 +35,7 @@ namespace AutoFixture.Extensions.Tests
             var i1 = new AutoFixture.Fixture();
             var i2 = FixtureFactory.Instance;
             var i3 = FixtureFactory.CreateFixture();
-            var i4 = new AutoDomainDataAttribute().Fixture;
+            var i4 = new AutoMoqDataAttribute().Fixture;
 
             fixture.Should().NotBeSameAs(i1);
             fixture.Should().NotBeSameAs(i2);
@@ -50,18 +51,8 @@ namespace AutoFixture.Extensions.Tests
                 .Should()
                 .Throw<ArgumentNullException>();
         }
-
-        [Theory, AutoDomainData]
-        public void CustomizeFixture_ShouldHaveMoreCustomizationsCount(IFixture fixture)
-        {
-            var before = fixture.Customizations.Count;
-            fixture.Customize(new ComplexChildFixture(fixture));
-            var after = fixture.Customizations.Count;
-
-            after.Should().BeGreaterThan(before);
-        }
         
-        [Theory, AutoDomainData]
+        [Theory, AutoMoqData]
         public void Create_OnNullableTypes_ShouldReturnNonNullableValues(IFixture fixture)
         {
             // Act
@@ -76,19 +67,29 @@ namespace AutoFixture.Extensions.Tests
             boolVal.Should().NotBe(default);
         }
 
-        [Theory, AutoDomainData]
+        [Theory, AutoMoqData]
         public void Create_OnMockedInterfaceType_ShouldReturnMockType(IFixture fixture)
         {
-            // AutoMock should mock and return mock types for interfaces and abstract classes by default
-            // See https://blog.ploeh.dk/2010/08/25/ChangingthebehaviorofAutoFixtureauto-mockingwithMoq/
             var i1 = fixture.Create<IHasProperties>();
 
+            // AutoMock should mock and return mock types for interfaces and abstract classes by default
+            // See https://blog.ploeh.dk/2010/08/25/ChangingthebehaviorofAutoFixtureauto-mockingwithMoq/
+            i1.IsMock().Should().BeTrue();
+
+            // All properties should be auto populated.
+            i1.Name.Should().NotBe(default);
+            i1.Number.Should().NotBe(default);
             i1.Name.Should().NotBe("foo");
             i1.Number.Should().NotBe(42);
-            i1.GetValue().Should().NotBe(i1.Name);
 
+            // All methods should call their base methods
+            i1.Invoking(_ => _.GetValue())
+                .Should()
+                .Throw<NotImplementedException>()
+                .WithMessage("Not implemented on interface");
+
+            // Test override mock values
             var mock = Mock.Get(i1);
-            mock.SetupAllProperties();
             mock.Setup(_ => _.GetValue()).Returns("SomeValue");
             i1.Name = "foo";
             i1.Number = 42;
@@ -99,28 +100,47 @@ namespace AutoFixture.Extensions.Tests
             i1.GetValue().Should().Be("SomeValue");
         }
 
-        [Theory, AutoDomainData]
-        public void Create_OnMockedInterfaceType_ShouldNotBeNull(IFixture fixture)
-        {
-            var i1 = fixture.Create<IHasProperties>();
-
-            Mock.Get(i1).Should().NotBeNull();
-            i1.Name.Should().NotBe(default);
-            i1.Number.Should().NotBe(default);
-        }
-
-        [Theory, AutoDomainData]
+        [Theory, AutoMoqData]
         public void Create_OnMockedConcreteType_ShouldNotBeNull(IFixture fixture)
         {
-            var i1 = fixture.Create<SimpleChild>();
+            var i1 = fixture.Create<ComplexChild>();
 
-            // Concrete type should return concrete type
-            Mock.Get(i1).Should().NotBeNull();
+            // AutoMock should mock and return mock types for interfaces and abstract classes by default
+            // See https://blog.ploeh.dk/2010/08/25/ChangingthebehaviorofAutoFixtureauto-mockingwithMoq/
+            i1.IsMock().Should().BeTrue();
+
+            // All properties should be auto populated.
             i1.Name.Should().NotBe(default);
             i1.Number.Should().NotBe(default);
+            i1.Boolean.Should().NotBeNull();
+            i1.Nullable.Should().NotBe(default);
+            i1.StringCollection.Should().NotBeNullOrEmpty();
+            i1.StringCollection.All(_ => !string.IsNullOrEmpty(_)).Should().BeTrue();
+
+            i1.Name.Should().NotBe("foo");
+            i1.Number.Should().NotBe(42);
+
+            // All methods should call their base methods
+            i1.Invoking(_ => _.GetValue())
+                .Should()
+                .Throw<NotImplementedException>()
+                .WithMessage("Not implemented on class");
+
+            // Test override mock values
+            var mock = Mock.Get(i1);
+            mock.Setup(_ => _.GetValue()).Returns("SomeValue");
+            i1.Name = "foo";
+            i1.Number = 42;
+            i1.StringCollection = new List<string>();
+
+            mock.Should().NotBeNull();
+            i1.Name.Should().Be("foo");
+            i1.Number.Should().Be(42);
+            i1.StringCollection.Should().BeEmpty();
+            i1.GetValue().Should().Be("SomeValue");
         }
 
-        [Theory, AutoDomainData]
+        [Theory, AutoMoqData]
         public void Freeze_OnInterfaceTypeEnumerable_ShouldReturnSameInstances(IFixture fixture)
         {
             // AutoMock can control specific items generated in a list
@@ -182,7 +202,7 @@ namespace AutoFixture.Extensions.Tests
             i7[0].Name.Should().Be("RandomText42");
         }
 
-        [Theory, AutoDomainData]
+        [Theory, AutoMoqData]
         public void Freeze_OnConcreteTypeEnumerable_ShouldReturnSameInstances(IFixture fixture)
         {
             // AutoMock can control specific items generated in a list
@@ -244,7 +264,7 @@ namespace AutoFixture.Extensions.Tests
             i7[0].Name.Should().Be("RandomText42");
         }
 
-        [Theory, AutoDomainData]
+        [Theory, AutoMoqData]
         public void Inject_SameFixture_ShouldReturnSameInstances(IFixture fixture)
         {
             var original = new ComplexChild();
@@ -282,19 +302,23 @@ namespace AutoFixture.Extensions.Tests
             j2.Should().BeSameAs(original);
         }
 
-        [Theory, AutoDomainData]
+        [Theory, AutoMoqData]
         public void Inject_OnMockedConcreteType_ShouldNotBeNull(IFixture fixture)
         {
             fixture.Inject(Mock.Of<ComplexChild>());
             var i1 = fixture.Create<ComplexChild>();
 
             // Mock type should return mock type with default values
-            Mock.Get(i1).Should().NotBeNull();
-            i1.Name.Should().Be(string.Empty);
-            i1.Number.Should().Be(0);
+            i1.IsMock().Should().BeTrue();
+            i1.Name.Should().Be(default);
+            i1.Number.Should().Be(default);
+            i1.ConcurrencyStamp.Should().Be(default(Guid));
+            i1.Boolean.Should().Be(default);
+            i1.Nullable.Should().BeNull();
+            i1.StringCollection.Should().BeNullOrEmpty();
         }
 
-        [Theory, AutoDomainData]
+        [Theory, AutoMoqData]
         public void Inject_OnMockedConcreteType_ShouldReturnMockType(IFixture fixture)
         {
             // AutoMock can mock concrete types if you explicitly inject the mock of concrete types
@@ -321,7 +345,7 @@ namespace AutoFixture.Extensions.Tests
             i2.Should().BeSameAs(i1);
         }
 
-        [Theory, AutoDomainData]
+        [Theory, AutoMoqData]
         public void Inject_OnConcreteTypeEnumerable_ShouldReturnSameInstances(IFixture fixture)
         {
             // AutoMock can control specific items generated in a list
@@ -384,7 +408,7 @@ namespace AutoFixture.Extensions.Tests
             i7[0].Name.Should().Be("RandomText42");
         }
 
-        [Theory, AutoDomainData]
+        [Theory, AutoMoqData]
         public void FreezeAndInject_ShouldReturnCorrectInstances(IFixture fixture)
         {
             var i1 = new SimpleChild
@@ -443,7 +467,7 @@ namespace AutoFixture.Extensions.Tests
             i6.Should().NotBeSameAs(i7);
         }
 
-        [Theory, AutoDomainData]
+        [Theory, AutoMoqData]
         public void FreezeAndCreateSequences_ShouldReturnSameInstances(IFixture fixture)
         {
             var seq = fixture.Freeze<IEnumerable<int>>();

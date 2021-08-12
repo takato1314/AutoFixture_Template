@@ -2,7 +2,11 @@
 {
     /// <summary>
     /// Create test fixture objects (aka. <see cref="IFixture"/>) for GREEN and RED cases.
-    /// See https://blog.ploeh.dk/2009/03/22/AnnouncingAutoFixture/.
+    /// See:
+    /// <list type="bullet">
+    ///     <item>https://blog.ploeh.dk/2009/03/22/AnnouncingAutoFixture/</item>
+    ///     <item>https://blogs.msmvps.com/bsonnino/2020/10/04/mocking-non-virtual-methods-of-a-class/</item>
+    /// </list>
     /// </summary>
     public interface IFixtureSetup<T> : ICustomization
     {

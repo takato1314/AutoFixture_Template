@@ -8,7 +8,6 @@ namespace AutoFixture.Extensions.Tests
 
         public SimpleChild()
         {
-            Name = string.Empty;
         }
 
         public SimpleChild(string name)
@@ -25,12 +24,12 @@ namespace AutoFixture.Extensions.Tests
         #endregion
 
         /// <inheritdoc />
-        public string Name { get; set; }
+        public string Name { get; set; } = nameof(SimpleChild);
 
         /// <inheritdoc />
-        public int Number { get; set; }
+        public int Number { get; set; } = 123;
 
         /// <inheritdoc />
-        public Guid ConcurrencyStamp { get; set; }
+        public Guid ConcurrencyStamp { get; set; } = Guid.NewGuid();
     }
 }

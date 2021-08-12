@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 
 // ReSharper disable InconsistentNaming
 #pragma warning disable 414
@@ -11,7 +12,6 @@ namespace AutoFixture.Extensions.Tests
 
         public ComplexChild()
         {
-            Name = string.Empty;
         }
 
         public ComplexChild(string name)
@@ -28,21 +28,24 @@ namespace AutoFixture.Extensions.Tests
         #endregion
 
         public readonly string _privateString = "fieldString";
-        
+
         /// <inheritdoc />
-        public string Name { get; set; }
+        public string Name { get; set; } = nameof(ComplexChild);
 
         /// <inheritdoc />
         public int Number { get; set; }
 
-        public bool Boolean { get; set; } = true;
+        /// <inheritdoc />
+        public Guid ConcurrencyStamp { get; set; }
 
-        public uint? Nullable { get; set; } = null!;
+        public bool? Boolean { get; set; }
 
-        public Guid ConcurrencyStamp { get; set; } = Guid.NewGuid();
+        public uint? Nullable { get; set; }
+
+        public ICollection<string> StringCollection { get; set; } = new List<string>();
 
 
-        public virtual string GetValue()
+        public string GetValue()
         {
             throw new NotImplementedException("Not implemented on class");
         }
