@@ -1,7 +1,11 @@
 ﻿using System;
+using System.Globalization;
 using System.Reflection;
 using Moq;
 using System.Linq;
+using AutoFixture.Kernel;
+using Moq.Language;
+using Moq.Language.Flow;
 
 namespace AutoFixture.Extensions
 {
@@ -33,6 +37,24 @@ namespace AutoFixture.Extensions
         }
 
         #region Private
+
+        internal static IReturnsResult<TMock> ReturnsUsingContext<TMock, TResult>(
+            this IReturns<TMock, TResult> setup,
+            ISpecimenContext context)
+            where TMock : class
+        {
+            return setup.Returns((() =>
+            {
+                object obj = context.Resolve(typeof(TResult));
+                if (obj == null && default(TResult) != null)
+                    throw new InvalidOperationException(string.Format(CultureInfo.CurrentCulture, $"Tried to setup a member with a return type of {typeof(TResult)}, but null was found instead."));
+                var result = obj is null or TResult ?
+                    (TResult)obj! :
+                    throw new InvalidOperationException(string.Format(CultureInfo.CurrentCulture, $"Tried to setup a member with a return type of {typeof(TResult)}, but an instance of {obj.GetType()} was found instead."));
+                setup.Returns(result);
+                return result;
+            }));
+        }
 
         /// <summary>
         /// Determines if specified <see cref="mocked"/> is an object created from <see cref="Mock"/>.

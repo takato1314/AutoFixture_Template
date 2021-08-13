@@ -28,21 +28,20 @@ namespace AutoFixture.Extensions.Tests
             var i0 = new SimpleChild();
             var i1 = sut.Object;
             var i2 = fixture.Create<SimpleChild>();
-            var i3 = fixture.Create<IHasProperties>();
 
             // Assert
+            // Should not be equivalent, because fixture will use a different instance
             i1.Should().NotBeNull();
-            i0.Should().NotBeEquivalentTo(i1);
-            i0.Should().NotBeEquivalentTo(i2);
-            i0.Should().NotBeEquivalentTo(i3);
-            i1.Should().NotBeEquivalentTo(i3);
-            i1.Should().NotBeEquivalentTo(i2);
-            i2.Should().NotBeEquivalentTo(i3);
+            i1.Should().NotBeEquivalentTo(i0);
+            i2.Should().NotBeEquivalentTo(i0);
+            
+            // Should be same, because the fixture share the same instance.
+            i1.Should().BeSameAs(i2);
 
+            // Should be a mock
             Mock.Get(i1).Should().NotBeNull();
             Mock.Get(i2).Should().NotBeNull();
             i2.IsMock().Should().BeTrue();
-            i3.IsMock().Should().BeTrue();
 
             return Task.CompletedTask;
         }
@@ -58,24 +57,17 @@ namespace AutoFixture.Extensions.Tests
 
             // Assert
             i1.Should().NotBeNull();
-            Mock.Get(i1).Should().NotBeNull();
+            i1.IsMock().Should().BeTrue();
             i1.Name.Should().NotBeNullOrEmpty();
             i1.Number.Should().NotBe(default);
             i1.ConcurrencyStamp.Should().NotBe(default);
 
-            var hasPropertiesList = new List<IHasProperties>
-            {
-                fixture.Create<IHasProperties>(),
-                fixture.Create<SimpleChild>(),
-            };
-            foreach (var instance in hasPropertiesList)
+            // All instances should be same as fixture
+            var instances = fixture.CreateMany<SimpleChild>();
+            foreach (var instance in instances)
             {
                 instance.Should().NotBeNull();
-                instance.Should().NotBeEquivalentTo(i1);
-
-                instance.Name.Should().NotBe(i1.Name);
-                instance.Number.Should().NotBe(i1.Number);
-                instance.ConcurrencyStamp.Should().NotBe(i1.ConcurrencyStamp);
+                instance.Should().BeSameAs(i1);
             }
 
             return Task.CompletedTask;
@@ -93,19 +85,23 @@ namespace AutoFixture.Extensions.Tests
             var oldObject = sut.Object;
 
             // Act
-            sut.Inject(fixture, injected);
+            sut.Inject(injected);
 
             // Assert
-            var newObject = sut.Object;
             oldObject.Should().NotBeNull();
-            newObject.Should().NotBeNull();
-            newObject.IsMock().Should().BeFalse();
-            newObject.Should().BeOfType<SimpleChild>();
-            newObject.Should().NotBeEquivalentTo(oldObject);
-            newObject.Should().BeSameAs(injected);
-            newObject.Name.Should().Be("OverridenText");
-            newObject.Number.Should().Be(111);
-            newObject.ConcurrencyStamp.ToString().Should().Be("6f55a677-c447-45f0-8e71-95c7b73fa889");
+
+            var instances = new List<SimpleChild> {sut.Object, fixture.Create<SimpleChild>()};
+            foreach (var i in instances)
+            {
+                i.Should().NotBeNull();
+                i.IsMock().Should().BeFalse();
+                i.Should().BeOfType<SimpleChild>();
+                i.Should().NotBeEquivalentTo(oldObject);
+                i.Should().BeSameAs(injected);
+                i.Name.Should().Be("OverridenText");
+                i.Number.Should().Be(111);
+                i.ConcurrencyStamp.ToString().Should().Be("6f55a677-c447-45f0-8e71-95c7b73fa889");
+            }
 
             return Task.CompletedTask;
         }
@@ -125,16 +121,20 @@ namespace AutoFixture.Extensions.Tests
             fixture.Inject(sut, injected);
 
             // Assert
-            var newObject = sut.Object;
             oldObject.Should().NotBeNull();
-            newObject.Should().NotBeNull();
-            newObject.IsMock().Should().BeFalse();
-            newObject.Should().BeOfType<SimpleChild>();
-            newObject.Should().NotBeEquivalentTo(oldObject);
-            newObject.Should().BeSameAs(injected);
-            newObject.Name.Should().Be("OverridenText");
-            newObject.Number.Should().Be(111);
-            newObject.ConcurrencyStamp.ToString().Should().Be("6f55a677-c447-45f0-8e71-95c7b73fa889");
+
+            var instances = new List<SimpleChild> { sut.Object, fixture.Create<SimpleChild>() };
+            foreach (var i in instances)
+            {
+                i.Should().NotBeNull();
+                i.IsMock().Should().BeFalse();
+                i.Should().BeOfType<SimpleChild>();
+                i.Should().NotBeEquivalentTo(oldObject);
+                i.Should().BeSameAs(injected);
+                i.Name.Should().Be("OverridenText");
+                i.Number.Should().Be(111);
+                i.ConcurrencyStamp.ToString().Should().Be("6f55a677-c447-45f0-8e71-95c7b73fa889");
+            }
 
             return Task.CompletedTask;
         }

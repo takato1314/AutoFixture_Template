@@ -1,6 +1,6 @@
-﻿using System;
-using System.Diagnostics.CodeAnalysis;
+﻿using System.Diagnostics.CodeAnalysis;
 using EnsureThat;
+using Moq;
 
 namespace AutoFixture.Extensions
 {
@@ -13,10 +13,13 @@ namespace AutoFixture.Extensions
         protected BaseFixtureSetup(
             [DisallowNull] IFixture fixture)
         {
-            fixture.Customize(this);
+            _fixture = fixture;
+            Customize();
         }
 
         #region Properties
+
+        private readonly IFixture _fixture;
 
         /// <inheritdoc cref="IFixtureSetup{T}.Object" />
         public T Object { get; protected set; } = null!;
@@ -27,24 +30,33 @@ namespace AutoFixture.Extensions
             set => Object = value;
         }
 
+        /// <summary>
+        /// The <see cref="Mock"/> instance for <see cref="Object"/>.
+        /// </summary>
+        protected Mock<T>? Mock { get; private set; }
+
         #endregion
 
-        /// <inheritdoc />
-        public virtual void Customize(IFixture fixture)
+        /// <inheritdoc cref="ICustomization.Customize"/>
+        public void Customize()
         {
-            Ensure.Any.IsNotNull(fixture);
-            Object = CreateObject(fixture);
+            Ensure.Any.IsNotNull(_fixture);
+            
+            Object = CreateObject();
+            Mock = Moq.Mock.Get(Object);
+
+            _fixture.Inject(Object);
         }
 
         /// <inheritdoc />
-        public void Inject(IFixture fixture, T item)
+        public void Inject(T item)
         {
-            if (fixture == null)
-            {
-                throw new ArgumentNullException(nameof(fixture));
-            }
-            
+            Ensure.Any.IsNotNull(_fixture);
+
             Object = item;
+            Mock = item.IsMock() ? Moq.Mock.Get(item) : null;
+
+            _fixture.Inject(item);
         }
 
         #region Private
@@ -53,10 +65,9 @@ namespace AutoFixture.Extensions
         /// Defines the expected <see cref="Object"/> instance of current fixture.
         /// See examples for various ways for implementing this.
         /// </summary>
-        protected virtual T CreateObject(IFixture fixture)
+        protected virtual T CreateObject()
         {
-            Object = fixture.Create<T>();
-            return Object;
+            return _fixture.Create<T>();
         }
 
         #endregion

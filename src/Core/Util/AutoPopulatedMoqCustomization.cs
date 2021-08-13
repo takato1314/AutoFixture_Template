@@ -1,6 +1,4 @@
-﻿using System.Linq;
-using AutoFixture.AutoMoq;
-using AutoFixture.Kernel;
+﻿using AutoFixture.AutoMoq;
 
 namespace AutoFixture.Extensions
 {

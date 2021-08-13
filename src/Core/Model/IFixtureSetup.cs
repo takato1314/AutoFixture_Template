@@ -8,16 +8,17 @@
     ///     <item>https://blogs.msmvps.com/bsonnino/2020/10/04/mocking-non-virtual-methods-of-a-class/</item>
     /// </list>
     /// </summary>
-    public interface IFixtureSetup<T> : ICustomization
+    public interface IFixtureSetup<T>
     {
         /// <summary>
         /// Retrieves the current fixture's object
         /// </summary>
         public T Object { get; internal set; }
-        
+
         /// <summary>
-        /// Inject an instance of <typeparam name="T">object</typeparam> into the current fixture.
+        /// Inject an instance of <typeparam name="T">object</typeparam> into the current fixture and overrides the <see cref="Object"/> instance. <br/>
+        /// Also see <see cref="FixtureRegistrar.Inject{T}"/>.
         /// </summary>
-        public void Inject(IFixture fixture, T item);
+        public void Inject(T item);
     }
 }

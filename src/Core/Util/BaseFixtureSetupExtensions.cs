@@ -11,7 +11,7 @@
             IFixtureSetup<T> fixtureSetup,
             T item)
         {
-            fixtureSetup.Inject(fixture, item);
+            fixtureSetup.Inject(item);
         }
     }
 }

@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using AutoFixture.AutoMoq;
@@ -43,7 +42,7 @@ namespace AutoFixture.Extensions
                 // Since we are using Virtuosity, we need to exclude virtual methods to be mock by default. 
                 var commands = ((ISpecimenCommand[])command.Commands);
                 var index = Array.IndexOf(commands, commands.Single(c => c is MockVirtualMethodsCommand));
-                commands[index] = commands[index + 1];
+                commands[index] = new MocksVirtualMethodsCommand();
             }
 
             // Behaviors
