@@ -44,8 +44,6 @@ namespace AutoFixture.Extensions
             
             Object = CreateObject();
             Mock = Moq.Mock.Get(Object);
-
-            _fixture.Inject(Object);
         }
 
         /// <inheritdoc />
@@ -67,7 +65,7 @@ namespace AutoFixture.Extensions
         /// </summary>
         protected virtual T CreateObject()
         {
-            return _fixture.Create<T>();
+            return _fixture.Freeze<T>();
         }
 
         #endregion

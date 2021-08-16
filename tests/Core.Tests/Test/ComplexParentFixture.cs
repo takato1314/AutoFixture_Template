@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using AutoFixture.Xunit2;
 using FluentAssertions;
 using Moq;
 using Xunit;
@@ -59,7 +60,7 @@ namespace AutoFixture.Extensions.Tests
         }
         
         [Theory, AutoMoqData]
-        public Task GetObject_ShouldReturnDifferentObjects(IFixture fixture)
+        public Task GetObject_ShouldReturnSameObjects(IFixture fixture)
         {
             // Arrange
             var sut = new ComplexParentFixture(fixture);
@@ -88,6 +89,36 @@ namespace AutoFixture.Extensions.Tests
         }
 
         [Theory, AutoMoqData]
+        public Task MultipleFixtures_ShouldReturnSameNestedFixtures(IFixture fixture)
+        {
+            // Act
+            var i1 = new ComplexParentFixture(fixture).Object;
+            var i2 = fixture.Create<ComplexParent>();
+            var i3 = new ComplexParentFixture(fixture).Object;
+
+            // Assert
+            i1.Should().BeSameAs(i2);
+            i1.SimpleChild.Should().BeSameAs(i2.SimpleChild);
+            i1.ComplexChild.Should().BeSameAs(i2.ComplexChild);
+
+            i1.Should().BeSameAs(i3);
+            i1.SimpleChild.Should().BeSameAs(i3.SimpleChild);
+            i1.ComplexChild.Should().BeSameAs(i3.ComplexChild);
+
+            i2.Should().BeSameAs(i3);
+            i2.SimpleChild.Should().BeSameAs(i3.SimpleChild);
+            i2.ComplexChild.Should().BeSameAs(i3.ComplexChild);
+
+            // Should share same references
+            i1.SimpleChild.Number = 1234;
+            i1.SimpleChild.Number.Should().Be(1234);
+            i2.SimpleChild.Number.Should().Be(1234);
+            i3.SimpleChild.Number.Should().Be(1234);
+
+            return Task.CompletedTask;
+        }
+
+        [Theory, AutoMoqData]
         public Task GetObject_ChildShouldBeSameFixture(IFixture fixture)
         {
             // Arrange
@@ -98,12 +129,16 @@ namespace AutoFixture.Extensions.Tests
             // Act
             var i1 = sut.Object;
             var i2 = fixture.Create<ComplexParent>();
-            var instances = new List<ComplexParent> {i1, i2};
+            var i3 = new ComplexParentFixture(fixture).Object;
+            var instances = new List<ComplexParent> {i1, i2, i3};
 
             // Assert
+            simpleChild.Should().NotBeNull();
             complexChild.Should().NotBeNull();
             foreach (var instance in instances)
             {
+                instance.Should().NotBeNull();
+
                 instance.ComplexChild.Should().NotBeNull();
                 instance.ComplexChild.IsMock().Should().BeTrue();
                 instance.ComplexChild.Should().BeSameAs(complexChild);
@@ -115,7 +150,40 @@ namespace AutoFixture.Extensions.Tests
 
             return Task.CompletedTask;
         }
+        
+        [Theory, AutoMoqData]
+        public Task GetObject_AnotherWay_ChildShouldBeSameFixture(
+            IFixture fixture,
+            [Frozen] SimpleChild simpleChild,
+            [Frozen] ComplexChild complexChild,
+            ComplexParent sut
+            )
+        {
+            // Act
+            var i1 = sut;
+            var i2 = fixture.Create<ComplexParent>();
+            var i3 = new ComplexParentFixture(fixture).Object;
+            var instances = new List<ComplexParent> { i1, i2, i3 };
 
+            // Assert
+            simpleChild.Should().NotBeNull();
+            complexChild.Should().NotBeNull();
+            foreach (var instance in instances)
+            {
+                instance.Should().NotBeNull();
+
+                instance.ComplexChild.Should().NotBeNull();
+                instance.ComplexChild.IsMock().Should().BeTrue();
+                instance.ComplexChild.Should().BeSameAs(complexChild);
+
+                instance.SimpleChild.Should().NotBeNull();
+                instance.SimpleChild!.IsMock().Should().BeTrue();
+                instance.SimpleChild.Should().BeSameAs(simpleChild);
+            }
+
+            return Task.CompletedTask;
+        }
+        
         [Theory, AutoMoqData]
         public Task TestInject_ShouldReturnOverwrittenValues(IFixture fixture)
         {
