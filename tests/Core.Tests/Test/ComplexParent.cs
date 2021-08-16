@@ -6,14 +6,21 @@ namespace AutoFixture.Extensions.Tests
     {
         #region ctor
         
-        public ComplexParent(ComplexChild child)
+        public ComplexParent(ComplexChild complexChild)
         {
-            Child = child;
+            ComplexChild = complexChild;
+        }
+        public ComplexParent(ComplexChild complexChild, SimpleChild simpleChild)
+        {
+            ComplexChild = complexChild;
+            SimpleChild = simpleChild;
         }
 
         #endregion
 
-        public ComplexChild Child { get; }
+        public ComplexChild ComplexChild { get; }
+
+        public SimpleChild SimpleChild { get; set; } = null!;
 
         /// <inheritdoc />
         public string Name { get; set; } = nameof(ComplexChild);

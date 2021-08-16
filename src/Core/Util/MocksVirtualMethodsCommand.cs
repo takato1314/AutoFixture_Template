@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
-using AutoFixture.AutoMoq;
 using AutoFixture.Kernel;
 using EnsureThat;
 using Moq;
@@ -13,8 +12,7 @@ namespace AutoFixture.Extensions
 {
     public class MocksVirtualMethodsCommand : ISpecimenCommand
     {
-        private readonly MockVirtualMethodsCommand _mockVirtualMethodsCommand = new();
-        private readonly Type _mockVirtualMethodsCommandType = typeof(MockVirtualMethodsCommand);
+        private static readonly DelegateSpecification DelegateSpecification = new();
 
         public void Execute(object specimen, ISpecimenContext context)
         {
@@ -26,18 +24,13 @@ namespace AutoFixture.Extensions
             foreach (MethodInfo configurableMethod in GetConfigurableMethods(mockedType))
             {
                 Type returnType = configurableMethod.ReturnType;
-                var expression = _mockVirtualMethodsCommandType.GetMethod("MakeMethodInvocationLambda", BindingFlags.Static | BindingFlags.NonPublic)!.Invoke(_mockVirtualMethodsCommand, new object[]
-                {
-                    mockedType,
-                    configurableMethod,
-                    context
-                });
+                var expression = MakeMethodInvocationLambda(mockedType, configurableMethod, context);
 
                 if (expression != null)
                 {
                     if (configurableMethod.IsVoid())
                     {
-                        _mockVirtualMethodsCommandType.GetMethod("SetupVoidMethod", BindingFlags.Static | BindingFlags.NonPublic)!.MakeGenericMethod(mockedType).Invoke(_mockVirtualMethodsCommand, new[]
+                        GetType().GetMethod("SetupVoidMethod", BindingFlags.Static | BindingFlags.NonPublic)!.MakeGenericMethod(mockedType).Invoke(this, new object[]
                         {
                             mock,
                             expression
@@ -45,7 +38,7 @@ namespace AutoFixture.Extensions
                     }
                     else
                     {
-                        GetType().GetMethod("SetupMethod", BindingFlags.Static | BindingFlags.NonPublic)!.MakeGenericMethod(mockedType, returnType).Invoke(this, new[]
+                        GetType().GetMethod("SetupMethod", BindingFlags.Static | BindingFlags.NonPublic)!.MakeGenericMethod(mockedType, returnType).Invoke(this, new object[]
                         {
                             mock,
                             expression,
@@ -57,7 +50,19 @@ namespace AutoFixture.Extensions
         }
 
         #region Private
-        
+
+        /// <summary>Sets up a void method.</summary>
+        /// <typeparam name="TMock">The type of the object being mocked.</typeparam>
+        /// <param name="mock">The mock being set up.</param>
+        /// <param name="methodCallExpression">An expression representing a call to the method being set up.</param>
+        private static void SetupVoidMethod<TMock>(
+            Mock<TMock> mock,
+            Expression<Action<TMock>> methodCallExpression)
+            where TMock : class
+        {
+            mock.Setup(methodCallExpression);
+        }
+
         /// <summary>Sets up a non-void method.</summary>
         /// <typeparam name="TMock">The type of the object being mocked.</typeparam>
         /// <typeparam name="TResult">The return type of the method being set up.</typeparam>
@@ -78,11 +83,11 @@ namespace AutoFixture.Extensions
         private IEnumerable<MethodInfo> GetConfigurableMethods(Type type)
         {
             IEnumerable<MethodInfo> methodInfos;
-            var specification = (DelegateSpecification)_mockVirtualMethodsCommandType.GetField("DelegateSpecification", BindingFlags.Static | BindingFlags.NonPublic)!.GetValue(_mockVirtualMethodsCommand)!;
-
-            if (!specification.IsSatisfiedBy(type))
+            if (!DelegateSpecification.IsSatisfiedBy(type))
             {
-                methodInfos = type.GetAllMethods();
+                methodInfos = type.GetAllProperties()
+                    .Where(p => p.GetGetMethod() != null)
+                    .Select((p => p.GetGetMethod()!));
             }
             else
             {
@@ -93,14 +98,25 @@ namespace AutoFixture.Extensions
             }
 
             IEnumerable<MethodInfo> methods = methodInfos;
-            //var canBeConfigured = _mockVirtualMethodsCommandType.GetMethod("DelegateSpecification", BindingFlags.Static | BindingFlags.NonPublic)!;
-            var skipWritablePropertyGetters = _mockVirtualMethodsCommandType.GetMethod("SkipWritablePropertyGetters", BindingFlags.Static | BindingFlags.NonPublic)!;
-            var results = ((IEnumerable<MethodInfo>)skipWritablePropertyGetters.Invoke(_mockVirtualMethodsCommand, new object[] { type, methods })!)
+            var results = SkipWritablePropertyGetters(type, methods)
                 .Where(CanBeConfigured);
 
             return results;
         }
-        
+
+        /// <summary>
+        /// Skip writable properties
+        /// </summary>
+        private static IEnumerable<MethodInfo> SkipWritablePropertyGetters(
+            Type type,
+            IEnumerable<MethodInfo> methods)
+        {
+            IEnumerable<MethodInfo> second = type.GetAllProperties()
+                .Where(p => p.GetGetMethod() != null && p.GetSetMethod() != null)
+                .Select((p => p.GetGetMethod()!));
+            return methods.Except(second);
+        }
+
         /// <summary>Determines whether a method can be mocked.</summary>
         /// <param name="method">The candidate method.</param>
         /// <returns>Whether <paramref name="method" /> can be configured.</returns>
@@ -109,6 +125,42 @@ namespace AutoFixture.Extensions
             if (!method.IsOverridable() || method.IsGenericMethod || method.HasRefParameters())
                 return false;
             return !method.IsVoid() || method.HasOutParameters();
+        }
+
+
+        /// <summary>
+        /// Returns a lambda expression that represents an invocation of a mocked type's method.
+        /// E.g.,. <![CDATA[ x => x.Method(It.IsAny<string>(), out parameter) ]]>
+        /// </summary>
+        private static Expression? MakeMethodInvocationLambda(
+            Type mockedType,
+            MethodInfo method,
+            ISpecimenContext context)
+        {
+            ParameterExpression parameterExpression = Expression.Parameter(mockedType, "x");
+            var list = method.GetParameters()
+                .Select(param => MakeParameterExpression(param, context))
+                .ToList();
+
+            if (list.Any(exp => exp is null))
+                return null;
+
+            return Expression.Lambda(!DelegateSpecification.IsSatisfiedBy(mockedType) ? 
+                Expression.Call(parameterExpression, method, list!) : 
+                Expression.Invoke(parameterExpression, list!), parameterExpression);
+        }
+
+        private static Expression? MakeParameterExpression(
+            ParameterInfo parameter,
+            ISpecimenContext context)
+        {
+            if (parameter.IsOut)
+            {
+                var elementType = parameter.ParameterType.GetElementType()!;
+                var obj = context.Resolve(elementType);
+                return obj is OmitSpecimen ? null : Expression.Constant(obj, elementType);
+            }
+            return Expression.Call(typeof(It).GetMethod("IsAny")!.MakeGenericMethod(parameter.ParameterType));
         }
 
         #endregion

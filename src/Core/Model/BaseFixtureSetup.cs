@@ -33,7 +33,7 @@ namespace AutoFixture.Extensions
         /// <summary>
         /// The <see cref="Mock"/> instance for <see cref="Object"/>.
         /// </summary>
-        protected Mock<T>? Mock { get; private set; }
+        internal Mock<T>? Mock { get; private set; }
 
         #endregion
 

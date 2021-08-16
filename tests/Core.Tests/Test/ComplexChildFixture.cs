@@ -54,12 +54,13 @@ namespace AutoFixture.Extensions.Tests
             Mock.Get(i1).Should().NotBeNull();
             Mock.Get(i2).Should().NotBeNull();
             i2.IsMock().Should().BeTrue();
+            sut.Mock.Should().BeSameAs(Mock.Get(i1));
 
             return Task.CompletedTask;
         }
         
         [Theory, AutoMoqData]
-        public Task GetObject_ShouldReturnDifferentObjects(IFixture fixture)
+        public Task GetObject_ShouldReturnSameObjects(IFixture fixture)
         {
             // Arrange
             var sut = new ComplexChildFixture(fixture);

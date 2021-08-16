@@ -53,6 +53,7 @@ namespace AutoFixture.Extensions.Tests
             Mock.Get(i1).Should().NotBeNull();
             Mock.Get(i2).Should().NotBeNull();
             i2.IsMock().Should().BeTrue();
+            sut.Mock.Should().BeSameAs(Mock.Get(i1));
 
             return Task.CompletedTask;
         }
@@ -72,6 +73,8 @@ namespace AutoFixture.Extensions.Tests
             i1.Name.Should().NotBeNullOrEmpty();
             i1.Number.Should().NotBe(default);
             i1.ConcurrencyStamp.Should().NotBe(default);
+            i1.ComplexChild.Should().NotBe(default);
+            i1.SimpleChild.Should().NotBe(default);
 
             // All instances should be same as fixture
             var instances = fixture.CreateMany<ComplexParent>();
@@ -88,6 +91,7 @@ namespace AutoFixture.Extensions.Tests
         public Task GetObject_ChildShouldBeSameFixture(IFixture fixture)
         {
             // Arrange
+            var simpleChild = new SimpleChildFixture(fixture).Object;
             var complexChild = new ComplexChildFixture(fixture).Object;
             var sut = new ComplexParentFixture(fixture);
 
@@ -100,9 +104,13 @@ namespace AutoFixture.Extensions.Tests
             complexChild.Should().NotBeNull();
             foreach (var instance in instances)
             {
-                instance.Child.Should().NotBeNull();
-                instance.Child.IsMock().Should().BeTrue();
-                instance.Child.Should().BeSameAs(complexChild);
+                instance.ComplexChild.Should().NotBeNull();
+                instance.ComplexChild.IsMock().Should().BeTrue();
+                instance.ComplexChild.Should().BeSameAs(complexChild);
+
+                instance.SimpleChild.Should().NotBeNull();
+                instance.SimpleChild!.IsMock().Should().BeTrue();
+                instance.SimpleChild.Should().BeSameAs(simpleChild);
             }
 
             return Task.CompletedTask;
@@ -112,8 +120,9 @@ namespace AutoFixture.Extensions.Tests
         public Task TestInject_ShouldReturnOverwrittenValues(IFixture fixture)
         {
             // Arrange
+            var simpleChild = new SimpleChildFixture(fixture).Object;
             var complexChild = new ComplexChildFixture(fixture).Object;
-            var mock = new Mock<ComplexParent>(complexChild) {CallBase = true, DefaultValue = DefaultValue.Mock};
+            var mock = new Mock<ComplexParent>(complexChild, simpleChild) {CallBase = true, DefaultValue = DefaultValue.Mock};
             mock.SetupProperty(_ => _.Name, "OverridenText");
             mock.SetupProperty(_ => _.Number, 111);
             mock.SetupProperty(_ => _.ConcurrencyStamp, new Guid("6f55a677-c447-45f0-8e71-95c7b73fa889"));
@@ -137,9 +146,15 @@ namespace AutoFixture.Extensions.Tests
                 instance.Number.Should().Be(111);
                 instance.ConcurrencyStamp.ToString().Should().Be("6f55a677-c447-45f0-8e71-95c7b73fa889");
 
-                instance.Child.Should().NotBeNull();
-                instance.Child.IsMock().Should().BeTrue();
-                instance.Child.Should().BeSameAs(complexChild);
+                // ComplexChild is injected via constructor, should be the same
+                instance.ComplexChild.Should().NotBeNull();
+                instance.ComplexChild.IsMock().Should().BeTrue();
+                instance.ComplexChild.Should().BeSameAs(complexChild);
+
+                // SimpleChild is injected via constructor, should be the same
+                instance.SimpleChild.Should().NotBeNull();
+                instance.SimpleChild!.IsMock().Should().BeTrue();
+                instance.SimpleChild.Should().BeSameAs(simpleChild);
             }
 
             return Task.CompletedTask;
@@ -174,9 +189,13 @@ namespace AutoFixture.Extensions.Tests
                 instance.Number.Should().Be(111);
                 instance.ConcurrencyStamp.ToString().Should().Be("6f55a677-c447-45f0-8e71-95c7b73fa889");
 
-                instance.Child.Should().NotBeNull();
-                instance.Child.IsMock().Should().BeTrue();
-                instance.Child.Should().BeSameAs(complexChild);
+                // ComplexChild is injected via constructor, should be the same
+                instance.ComplexChild.Should().NotBeNull();
+                instance.ComplexChild.IsMock().Should().BeTrue();
+                instance.ComplexChild.Should().BeSameAs(complexChild);
+
+                // SimpleChild is NOT injected via constructor, should be null
+                instance.SimpleChild.Should().BeNull();
             }
 
             return Task.CompletedTask;
