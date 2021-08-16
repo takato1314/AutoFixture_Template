@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using AutoMapper;
 using Castle.Core.Internal;
 using FluentAssertions;
 using Moq;
@@ -14,17 +15,31 @@ namespace AutoFixture.Extensions.Tests
         /// <inheritdoc />
         public ComplexChildFixture(IFixture fixture) : base(fixture)
         {
+            var mapper = new Mapper(new MapperConfiguration(m =>
+            {
+                m.CreateMap<ComplexChild, ComplexChild>();
+            }));
+            mapper.Map(_object, Object);
         }
 
-        //protected override ComplexChild CreateObject(IFixture fixture)
-        //{
-        //    // Mock is useful especially for scenario that uses HttpClients for connection or has heavy operations.
-        //    // Otherwise, use actual class whenever possible.
-        //    var mock = new Mock<ComplexChild> { CallBase = true, DefaultValue = DefaultValue.Mock };
-        //    var hasProperties = mock.Object;
+        #region Properties
 
-        //    return hasProperties;
-        //}
+        // ReSharper disable once InconsistentNaming
+        internal static readonly ComplexChild _object = new()
+        {
+            Name = "FixtureSetup",
+            Number = 5566,
+            Nullable = 5566,
+            ConcurrencyStamp = new Guid("ac8fd90c-f84e-45ff-88b7-0a971db1ddff"),
+            Boolean = false,
+            Function = _ => "FixtureSetupFunction",
+            StringCollection = new List<string>
+            {
+                "FixtureSetupStringCollection"
+            }
+        };
+
+        #endregion
     }
 
 
@@ -49,6 +64,7 @@ namespace AutoFixture.Extensions.Tests
 
             // Should be same, because the fixture share the same instance.
             i1.Should().BeSameAs(i2);
+            i1.Should().BeEquivalentTo(ComplexChildFixture._object);
 
             // Should be a mock
             Mock.Get(i1).Should().NotBeNull();

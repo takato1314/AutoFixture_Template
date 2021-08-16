@@ -14,16 +14,6 @@ namespace AutoFixture.Extensions.Tests
         public ComplexParentFixture(IFixture fixture) : base(fixture)
         {
         }
-
-        //protected override ComplexParent CreateObject(IFixture fixture)
-        //{
-        //    // Mock is useful especially for scenario that uses HttpClients for connection or has heavy operations.
-        //    // Otherwise, use actual class whenever possible.
-        //    var mock = new Mock<ComplexParent> { CallBase = true, DefaultValue = DefaultValue.Mock };
-        //    var hasProperties = mock.Object;
-
-        //    return hasProperties;
-        //}
     }
 
 
@@ -108,6 +98,10 @@ namespace AutoFixture.Extensions.Tests
             i2.Should().BeSameAs(i3);
             i2.SimpleChild.Should().BeSameAs(i3.SimpleChild);
             i2.ComplexChild.Should().BeSameAs(i3.ComplexChild);
+            
+            i1.ComplexChild.Should().BeEquivalentTo(ComplexChildFixture._object);
+            i2.ComplexChild.Should().BeEquivalentTo(ComplexChildFixture._object);
+            i3.ComplexChild.Should().BeEquivalentTo(ComplexChildFixture._object);
 
             // Should share same references
             i1.SimpleChild.Number = 1234;
@@ -123,7 +117,8 @@ namespace AutoFixture.Extensions.Tests
         {
             // Arrange
             var simpleChild = new SimpleChildFixture(fixture).Object;
-            var complexChild = new ComplexChildFixture(fixture).Object;
+            var complexChildFixture = new ComplexChildFixture(fixture);
+            var complexChild = complexChildFixture.Object;
             var sut = new ComplexParentFixture(fixture);
 
             // Act
@@ -141,7 +136,8 @@ namespace AutoFixture.Extensions.Tests
 
                 instance.ComplexChild.Should().NotBeNull();
                 instance.ComplexChild.IsMock().Should().BeTrue();
-                instance.ComplexChild.Should().BeSameAs(complexChild);
+                instance.ComplexChild.Should().BeSameAs(complexChild); // Same instance for created fixture
+                instance.ComplexChild.Should().BeEquivalentTo(ComplexChildFixture._object); // Similar to the setup object. 
 
                 instance.SimpleChild.Should().NotBeNull();
                 instance.SimpleChild!.IsMock().Should().BeTrue();
@@ -152,7 +148,7 @@ namespace AutoFixture.Extensions.Tests
         }
         
         [Theory, AutoMoqData]
-        public Task GetObject_AnotherWay_ChildShouldBeSameFixture(
+        public Task GetObject_DI_ChildShouldBeSameFixture(
             IFixture fixture,
             [Frozen] SimpleChild simpleChild,
             [Frozen] ComplexChild complexChild,
@@ -174,7 +170,8 @@ namespace AutoFixture.Extensions.Tests
 
                 instance.ComplexChild.Should().NotBeNull();
                 instance.ComplexChild.IsMock().Should().BeTrue();
-                instance.ComplexChild.Should().BeSameAs(complexChild);
+                instance.ComplexChild.Should().BeSameAs(complexChild); // Same instance for created fixture
+                instance.ComplexChild.Should().BeEquivalentTo(ComplexChildFixture._object); // Similar to the setup object. 
 
                 instance.SimpleChild.Should().NotBeNull();
                 instance.SimpleChild!.IsMock().Should().BeTrue();

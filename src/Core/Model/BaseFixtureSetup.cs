@@ -14,7 +14,9 @@ namespace AutoFixture.Extensions
             [DisallowNull] IFixture fixture)
         {
             _fixture = fixture;
-            Customize();
+
+            Object = CreateObject();
+            Mock = Moq.Mock.Get(Object);
         }
 
         #region Properties
@@ -22,7 +24,7 @@ namespace AutoFixture.Extensions
         private readonly IFixture _fixture;
 
         /// <inheritdoc cref="IFixtureSetup{T}.Object" />
-        public T Object { get; protected set; } = null!;
+        public T Object { get; protected set; }
 
         T IFixtureSetup<T>.Object
         {
@@ -37,15 +39,6 @@ namespace AutoFixture.Extensions
 
         #endregion
 
-        /// <inheritdoc cref="ICustomization.Customize"/>
-        public void Customize()
-        {
-            Ensure.Any.IsNotNull(_fixture);
-            
-            Object = CreateObject();
-            Mock = Moq.Mock.Get(Object);
-        }
-
         /// <inheritdoc />
         public void Inject(T item)
         {
@@ -58,12 +51,11 @@ namespace AutoFixture.Extensions
         }
 
         #region Private
-        
+
         /// <summary>
-        /// Defines the expected <see cref="Object"/> instance of current fixture.
-        /// See examples for various ways for implementing this.
+        /// Initialize a fixture instance for the <see cref="Object"/>.
         /// </summary>
-        protected virtual T CreateObject()
+        private T CreateObject()
         {
             return _fixture.Freeze<T>();
         }

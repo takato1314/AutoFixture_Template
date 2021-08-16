@@ -92,16 +92,16 @@ namespace AutoFixture.Extensions.Tests
             oldObject.Should().NotBeNull();
 
             var instances = new List<SimpleChild> {sut.Object, fixture.Create<SimpleChild>()};
-            foreach (var i in instances)
+            foreach (var instance in instances)
             {
-                i.Should().NotBeNull();
-                i.IsMock().Should().BeFalse();
-                i.Should().BeOfType<SimpleChild>();
-                i.Should().NotBeEquivalentTo(oldObject);
-                i.Should().BeSameAs(injected);
-                i.Name.Should().Be("OverridenText");
-                i.Number.Should().Be(111);
-                i.ConcurrencyStamp.ToString().Should().Be("6f55a677-c447-45f0-8e71-95c7b73fa889");
+                instance.Should().NotBeNull();
+                instance.IsMock().Should().BeFalse();
+                instance.Should().BeOfType<SimpleChild>();
+                instance.Should().NotBeEquivalentTo(oldObject);
+                instance.Should().BeSameAs(injected);
+                instance.Name.Should().Be("OverridenText");
+                instance.Number.Should().Be(111);
+                instance.ConcurrencyStamp.ToString().Should().Be("6f55a677-c447-45f0-8e71-95c7b73fa889");
             }
 
             return Task.CompletedTask;
@@ -125,16 +125,16 @@ namespace AutoFixture.Extensions.Tests
             oldObject.Should().NotBeNull();
 
             var instances = new List<SimpleChild> { sut.Object, fixture.Create<SimpleChild>() };
-            foreach (var i in instances)
+            foreach (var instance in instances)
             {
-                i.Should().NotBeNull();
-                i.IsMock().Should().BeFalse();
-                i.Should().BeOfType<SimpleChild>();
-                i.Should().NotBeEquivalentTo(oldObject);
-                i.Should().BeSameAs(injected);
-                i.Name.Should().Be("OverridenText");
-                i.Number.Should().Be(111);
-                i.ConcurrencyStamp.ToString().Should().Be("6f55a677-c447-45f0-8e71-95c7b73fa889");
+                instance.Should().NotBeNull();
+                instance.IsMock().Should().BeFalse();
+                instance.Should().BeOfType<SimpleChild>();
+                instance.Should().NotBeEquivalentTo(oldObject);
+                instance.Should().BeSameAs(injected);
+                instance.Name.Should().Be("OverridenText");
+                instance.Number.Should().Be(111);
+                instance.ConcurrencyStamp.ToString().Should().Be("6f55a677-c447-45f0-8e71-95c7b73fa889");
             }
 
             return Task.CompletedTask;
