@@ -10,6 +10,7 @@ namespace AutoFixture.Extensions.Tests
         {
             ComplexChild = complexChild;
         }
+
         public ComplexParent(ComplexChild complexChild, SimpleChild simpleChild)
         {
             ComplexChild = complexChild;

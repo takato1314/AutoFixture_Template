@@ -13,6 +13,8 @@ namespace AutoFixture.Extensions.Tests
         /// <inheritdoc />
         public ComplexParentFixture(IFixture fixture) : base(fixture)
         {
+            // Use mock setup for getter only properties.
+            Mock!.Setup(m => m.ComplexChild).Returns(new ComplexChildFixture(fixture).Object);
         }
     }
 
