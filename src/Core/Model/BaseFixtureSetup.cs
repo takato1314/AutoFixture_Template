@@ -42,7 +42,7 @@ namespace AutoFixture.Extensions
         /// <inheritdoc />
         public void Inject(T item)
         {
-            Ensure.Any.IsNotNull(_fixture);
+            Ensure.Any.IsNotNull(item);
 
             Object = item;
             Mock = item.IsMock() ? Moq.Mock.Get(item) : null;
