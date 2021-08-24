@@ -1,8 +1,8 @@
-# AutoFixture_Template
+# AutoMoqFixture_Ext
 [![.NET](https://github.com/takato1314/autofixture_extensions/actions/workflows/dotnet.yml/badge.svg?branch=main)](https://github.com/takato1314/autofixture_extensions/actions/workflows/dotnet.yml)
 
-An [AutoFixture](https://github.com/AutoFixture/AutoFixture) setup template that create mocks with pre-determined values.
-- Mocks are based on loose mocks based on AutoMoqCustomization.
+An [AutoFixture](https://github.com/AutoFixture/AutoFixture) extension that create moq mocks with auto-populated values.
+- Mocks are based on loose mocks based on [AutoMoqCustomization](https://github.com/AutoFixture/AutoFixture/blob/730b47884975d0c1256209073a719a9fe510d8a9/Src/AutoMoq/AutoMoqCustomization.cs).
 - Provides an [IFixtureSetup](https://github.com/takato1314/autofixture_extensions/blob/main/src/Core/Model/IFixtureSetup.cs) extensibility point that allows users to setup mock fixtures based on fixed values if intended so.
   -  Implementations of IFixtureSetup will use recursive mocks by default to provide values.
   -  Implementations of IFixtureSetup will freeze it's instance (as singleton) onto the fixture. This is done so that any other dependent fixture objects will refer to the same instance.
