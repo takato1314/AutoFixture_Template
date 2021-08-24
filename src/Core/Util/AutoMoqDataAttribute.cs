@@ -36,8 +36,8 @@ namespace AutoFixture.Extensions
             {
                 AssertionOptions.AssertEquivalencyUsing(options =>
                 {
-                    options.Using<DateTime>(ctx => ctx.Subject.Should().BeCloseTo(ctx.Expectation, 5000)).WhenTypeIs<DateTime>();
-                    options.Using<DateTimeOffset>(ctx => ctx.Subject.Should().BeCloseTo(ctx.Expectation, 5000)).WhenTypeIs<DateTimeOffset>();
+                    options.Using<DateTime>(ctx => ctx.Subject.Should().BeCloseTo(ctx.Expectation, TimeSpan.FromSeconds(5))).WhenTypeIs<DateTime>();
+                    options.Using<DateTimeOffset>(ctx => ctx.Subject.Should().BeCloseTo(ctx.Expectation, TimeSpan.FromSeconds(5))).WhenTypeIs<DateTimeOffset>();
                     options.Using(new EntityDtoSelectionRule());
                     _fluentOptionsSet = true;
 

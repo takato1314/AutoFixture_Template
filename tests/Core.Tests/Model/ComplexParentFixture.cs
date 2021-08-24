@@ -65,7 +65,7 @@ namespace AutoFixture.Extensions.Tests
             i1.IsMock().Should().BeTrue();
             i1.Name.Should().NotBeNullOrEmpty();
             i1.Number.Should().NotBe(default);
-            i1.ConcurrencyStamp.Should().NotBe(default);
+            i1.ConcurrencyStamp.Should().NotBe(default(Guid));
             i1.ComplexChild.Should().NotBe(default);
             i1.SimpleChild.Should().NotBe(default);
 

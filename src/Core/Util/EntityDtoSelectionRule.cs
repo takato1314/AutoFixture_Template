@@ -12,23 +12,22 @@ namespace AutoFixture.Extensions
     /// </summary>
     public class EntityDtoSelectionRule : IMemberSelectionRule
     {
-        /// <inheritdoc />
-        public IEnumerable<SelectedMemberInfo> SelectMembers(
-            IEnumerable<SelectedMemberInfo> selectedMembers,
-            IMemberInfo context,
-            IEquivalencyAssertionOptions config)
+        public IEnumerable<IMember> SelectMembers(
+            INode currentNode, 
+            IEnumerable<IMember> selectedMembers, 
+            MemberSelectionContext context)
         {
             var selectedMembersList = selectedMembers.ToList();
-            var filteredMembersList = new List<SelectedMemberInfo>(selectedMembersList);
+            var filteredMembersList = new List<IMember>(selectedMembersList);
 
             foreach (var selectedMemberInfo in selectedMembersList)
             {
-                var currentMemberType = selectedMemberInfo.MemberType;
+                var currentMemberType = selectedMemberInfo.Type;
                 if (selectedMemberInfo.Name.EndsWith("Id") ||
-                    selectedMemberInfo.MemberType == typeof(DateTime) ||
-                    selectedMemberInfo.MemberType == typeof(DateTimeOffset) ||
-                    (currentMemberType.GenericTypeArguments.FirstOrDefault()?.GetProperties().Select(_ => _.PropertyType.Name).Contains(context.CompileTimeType.Name) ?? false) ||
-                    currentMemberType.Name.EndsWith("Dto") && currentMemberType.GetProperties().Select(_ => _.PropertyType.Name).Contains(context.CompileTimeType.Name))
+                    selectedMemberInfo.Type == typeof(DateTime) ||
+                    selectedMemberInfo.Type == typeof(DateTimeOffset) ||
+                    (currentMemberType.GenericTypeArguments.FirstOrDefault()?.GetProperties().Select(_ => _.PropertyType.Name).Contains(context.Type.Name) ?? false) ||
+                    currentMemberType.Name.EndsWith("Dto") && currentMemberType.GetProperties().Select(_ => _.PropertyType.Name).Contains(context.Type.Name))
                 {
                     filteredMembersList.Remove(selectedMemberInfo);
                 }
