@@ -8,6 +8,14 @@
     <Platforms>AnyCPU</Platforms>
     <LangVersion>latest</LangVersion>
     <Nullable>enable</Nullable>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <PackageId>AutoMoqFixture.Ext</PackageId>
+    <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
+    <Authors>alex.soh</Authors>
+    <Description>An [AutoFixture](https://github.com/AutoFixture/AutoFixture) customization which uses Moq for auto mocking objects.</Description>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageProjectUrl>https://github.com/takato1314/automoqfixture_ext</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/takato1314/automoqfixture_ext</RepositoryUrl>
   </PropertyGroup>
 
   <ItemGroup>
