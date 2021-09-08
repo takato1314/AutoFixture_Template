@@ -9,12 +9,12 @@ updates:
   - package-ecosystem: "nuget"
     directory: "/src/Core" #AutoFixture.Extensions.csproj
     schedule:
-      interval: "weekly"
+      interval: "monthly"
       day: "wednesday"
     open-pull-requests-limit: 5
   - package-ecosystem: "nuget"
     directory: "/tests/Core.Tests" #AutoFixture.Extensions.Tests.csproj
     schedule:
-      interval: "weekly"
+      interval: "monthly"
       day: "wednesday"
     open-pull-requests-limit: 5
