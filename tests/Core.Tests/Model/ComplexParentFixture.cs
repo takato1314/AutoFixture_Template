@@ -15,9 +15,9 @@ namespace AutoFixture.Extensions.Tests
         {
             // Use mock setup for getter only properties.
             Mock!.Setup(m => m.ComplexChild).Returns(new ComplexChildFixture(fixture).Object);
+            Mock.Setup(m => m.StructChild).Returns(new StructChild("host", 80));
         }
     }
-
 
     public class ComplexParentFixtureTest
     {
@@ -68,6 +68,7 @@ namespace AutoFixture.Extensions.Tests
             i1.ConcurrencyStamp.Should().NotBe(default(Guid));
             i1.ComplexChild.Should().NotBe(default);
             i1.SimpleChild.Should().NotBe(default);
+            i1.StructChild.Should().NotBe(default); 
 
             // All instances should be same as fixture
             var instances = fixture.CreateMany<ComplexParent>();
@@ -92,15 +93,18 @@ namespace AutoFixture.Extensions.Tests
             i1.Should().BeSameAs(i2);
             i1.SimpleChild.Should().BeSameAs(i2.SimpleChild);
             i1.ComplexChild.Should().BeSameAs(i2.ComplexChild);
+            i1.StructChild.Should().BeEquivalentTo(i2.StructChild);
 
             i1.Should().BeSameAs(i3);
             i1.SimpleChild.Should().BeSameAs(i3.SimpleChild);
             i1.ComplexChild.Should().BeSameAs(i3.ComplexChild);
+            i1.StructChild.Should().BeEquivalentTo(i3.StructChild);
 
             i2.Should().BeSameAs(i3);
             i2.SimpleChild.Should().BeSameAs(i3.SimpleChild);
             i2.ComplexChild.Should().BeSameAs(i3.ComplexChild);
-            
+            i2.StructChild.Should().BeEquivalentTo(i3.StructChild);
+
             i1.ComplexChild.Should().BeEquivalentTo(ComplexChildFixture._object);
             i2.ComplexChild.Should().BeEquivalentTo(ComplexChildFixture._object);
             i3.ComplexChild.Should().BeEquivalentTo(ComplexChildFixture._object);
@@ -118,6 +122,7 @@ namespace AutoFixture.Extensions.Tests
         public Task GetObject_ChildShouldBeSameFixture(IFixture fixture)
         {
             // Arrange
+            var structChild = new StructChild("host", 80);
             var simpleChild = new SimpleChildFixture(fixture).Object;
             var complexChildFixture = new ComplexChildFixture(fixture);
             var complexChild = complexChildFixture.Object;
@@ -144,6 +149,9 @@ namespace AutoFixture.Extensions.Tests
                 instance.SimpleChild.Should().NotBeNull();
                 instance.SimpleChild!.IsMock().Should().BeTrue();
                 instance.SimpleChild.Should().BeSameAs(simpleChild);
+
+                instance.StructChild.Should().NotBeNull();
+                instance.StructChild.Should().BeEquivalentTo(structChild);
             }
 
             return Task.CompletedTask;
@@ -178,6 +186,8 @@ namespace AutoFixture.Extensions.Tests
                 instance.SimpleChild.Should().NotBeNull();
                 instance.SimpleChild!.IsMock().Should().BeTrue();
                 instance.SimpleChild.Should().BeSameAs(simpleChild);
+
+                instance.StructChild.Should().NotBeNull();
             }
 
             return Task.CompletedTask;

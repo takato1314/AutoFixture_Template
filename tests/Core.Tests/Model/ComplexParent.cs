@@ -23,6 +23,8 @@ namespace AutoFixture.Extensions.Tests
 
         public SimpleChild SimpleChild { get; set; } = null!;
 
+        public StructChild StructChild { get; set; }
+
         /// <inheritdoc />
         public string Name { get; set; } = nameof(ComplexChild);
 

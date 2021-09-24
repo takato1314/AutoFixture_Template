@@ -78,8 +78,14 @@ namespace AutoFixture.Extensions
         {
             if (t.IsValueType)
             {
-                var paramType = t.GetTypeInfo().GetGenericArguments().Single();
-                return context.Resolve(paramType);
+                if (t.IsGenericType)
+                {
+                    // Nullable<type>
+                    var paramType = t.GetTypeInfo().GetGenericArguments().Single();
+                    return context.Resolve(paramType);
+                }
+                
+                return context.Resolve(t);
             }
 
             var mockType = typeof(Mock<>).MakeGenericType(t);
