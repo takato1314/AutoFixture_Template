@@ -68,13 +68,38 @@ namespace AutoFixture.Extensions.Tests
         }
 
         [Theory, AutoMoqData]
+        public void Create_OnStructTypes_ShouldReturnValues(IFixture fixture)
+        {
+            // Act
+            var structChild = fixture.Create<StructChild>();
+
+            // Assert
+            structChild.Should().NotBe(default);
+            //structChild.HasValue.Should().BeTrue();
+            //structChild.Host.Should().NotBeNullOrEmpty();
+            //structChild.Port.Should().BeGreaterThan(0);
+        }
+
+        [Theory, AutoMoqData]
+        public void Create_OnDictionaryTypes_ShouldReturnValues(IFixture fixture)
+        {
+            // Act
+            var dictionary = fixture.Create<Dictionary<string, int>>();
+
+            // Assert
+            dictionary.Should().BeEmpty();
+            //dictionary.Keys.Should().NotBeNullOrEmpty();
+            //dictionary.Values.Should().NotBeNullOrEmpty();
+        }
+
+        [Theory, AutoMoqData]
         public void Create_OnMockedInterfaceType_ShouldReturnMockType(IFixture fixture)
         {
             var i1 = fixture.Create<IHasProperties>();
 
             // AutoMock should mock and return mock types for interfaces and abstract classes by default
             // See https://blog.ploeh.dk/2010/08/25/ChangingthebehaviorofAutoFixtureauto-mockingwithMoq/
-            i1.IsMock().Should().BeTrue();
+            i1.IsMockType().Should().BeTrue();
 
             // All properties should be auto populated.
             i1.Name.Should().NotBe(default);
@@ -107,7 +132,7 @@ namespace AutoFixture.Extensions.Tests
 
             // AutoMock should mock and return mock types for interfaces and abstract classes by default
             // See https://blog.ploeh.dk/2010/08/25/ChangingthebehaviorofAutoFixtureauto-mockingwithMoq/
-            i1.IsMock().Should().BeTrue();
+            i1.IsMockType().Should().BeTrue();
 
             // All properties should be auto populated.
             i1.Name.Should().NotBe(default);
@@ -116,6 +141,9 @@ namespace AutoFixture.Extensions.Tests
             i1.Nullable.Should().NotBe(default);
             i1.StringCollection.Should().NotBeNullOrEmpty();
             i1.StringCollection.All(_ => !string.IsNullOrEmpty(_)).Should().BeTrue();
+            i1.DictionaryCollection.Should().BeEmpty();
+            //i1.DictionaryCollection.All(_ => !string.IsNullOrEmpty(_.Value)).Should().BeTrue();
+            //i1.DictionaryCollection.Should().NotContainEquivalentOf("testString");
 
             i1.Name.Should().NotBe("foo");
             i1.Number.Should().NotBe(42);
@@ -132,12 +160,17 @@ namespace AutoFixture.Extensions.Tests
             i1.Name = "foo";
             i1.Number = 42;
             i1.StringCollection = new List<string>();
+            mock.Setup(_ => _.DictionaryCollection).Returns(new Dictionary<string, string>
+            {
+                {"test", "testString"}
+            });
 
             mock.Should().NotBeNull();
             i1.Name.Should().Be("foo");
             i1.Number.Should().Be(42);
             i1.StringCollection.Should().BeEmpty();
             i1.GetValue().Should().Be("SomeValue");
+            i1.DictionaryCollection["test"].Should().Be("testString");
         }
 
         [Theory, AutoMoqData]
@@ -309,7 +342,7 @@ namespace AutoFixture.Extensions.Tests
             var i1 = fixture.Create<ComplexChild>();
 
             // Mock type should return mock type with default values
-            i1.IsMock().Should().BeTrue();
+            i1.IsMockType().Should().BeTrue();
             i1.Name.Should().Be(default);
             i1.Number.Should().Be(default);
             i1.ConcurrencyStamp.Should().Be(default(Guid));

@@ -1,5 +1,4 @@
-﻿using System.Diagnostics.CodeAnalysis;
-using EnsureThat;
+﻿using EnsureThat;
 using Moq;
 
 namespace AutoFixture.Extensions
@@ -11,7 +10,7 @@ namespace AutoFixture.Extensions
     {
         /// <inheritdoc cref="BaseFixtureSetup{TFixture}"/>
         protected BaseFixtureSetup(
-            [DisallowNull] IFixture fixture)
+            IFixture fixture)
         {
             _fixture = fixture;
 
@@ -45,7 +44,7 @@ namespace AutoFixture.Extensions
             Ensure.Any.IsNotNull(item);
 
             Object = item;
-            Mock = item.IsMock() ? Moq.Mock.Get(item) : null;
+            Mock = item.IsMockType() ? Moq.Mock.Get(item) : null;
 
             _fixture.Inject(item);
         }

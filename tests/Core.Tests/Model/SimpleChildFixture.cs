@@ -41,7 +41,7 @@ namespace AutoFixture.Extensions.Tests
             // Should be a mock
             Mock.Get(i1).Should().NotBeNull();
             Mock.Get(i2).Should().NotBeNull();
-            i2.IsMock().Should().BeTrue();
+            i2.IsMockType().Should().BeTrue();
             sut.Mock.Should().BeSameAs(Mock.Get(i1));
 
             return Task.CompletedTask;
@@ -58,7 +58,7 @@ namespace AutoFixture.Extensions.Tests
 
             // Assert
             i1.Should().NotBeNull();
-            i1.IsMock().Should().BeTrue();
+            i1.IsMockType().Should().BeTrue();
             i1.Name.Should().NotBeNullOrEmpty();
             i1.Number.Should().NotBe(default);
             i1.ConcurrencyStamp.Should().NotBe(default(Guid));
@@ -95,7 +95,7 @@ namespace AutoFixture.Extensions.Tests
             foreach (var instance in instances)
             {
                 instance.Should().NotBeNull();
-                instance.IsMock().Should().BeFalse();
+                instance.IsMockType().Should().BeFalse();
                 instance.Should().BeOfType<SimpleChild>();
                 instance.Should().NotBeEquivalentTo(oldObject);
                 instance.Should().BeSameAs(injected);
@@ -128,7 +128,7 @@ namespace AutoFixture.Extensions.Tests
             foreach (var instance in instances)
             {
                 instance.Should().NotBeNull();
-                instance.IsMock().Should().BeFalse();
+                instance.IsMockType().Should().BeFalse();
                 instance.Should().BeOfType<SimpleChild>();
                 instance.Should().NotBeEquivalentTo(oldObject);
                 instance.Should().BeSameAs(injected);

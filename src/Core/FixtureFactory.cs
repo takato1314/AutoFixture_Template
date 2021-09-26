@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using AutoFixture.AutoMoq;
@@ -44,6 +45,13 @@ namespace AutoFixture.Extensions
                 var index = Array.IndexOf(commands, commands.Single(c => c is MockVirtualMethodsCommand));
                 commands[index] = new MocksVirtualMethodsCommand();
             }
+
+            // Residue Collectors
+            //fixture.Customizations.Add(new DictionaryRelay());
+            //fixture.Customizations.Add(new TypeRelay(typeof(IDictionary<,>), typeof(IDictionary<,>)));
+            //fixture.Customizations.Add(new TypeRelay(typeof(KeyValuePair<,>), typeof(KeyValuePair<,>)));
+            //fixture.ResidueCollectors.Add(new TypeRelay(typeof(IDictionary<,>), typeof(IDictionary<,>)));
+            //fixture.ResidueCollectors.Add(new TypeRelay(typeof(KeyValuePair<,>), typeof(KeyValuePair<,>)));
 
             // Behaviors
             fixture.Behaviors.OfType<ThrowingRecursionBehavior>()

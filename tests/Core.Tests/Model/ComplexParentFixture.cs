@@ -45,7 +45,7 @@ namespace AutoFixture.Extensions.Tests
             // Should be a mock
             Mock.Get(i1).Should().NotBeNull();
             Mock.Get(i2).Should().NotBeNull();
-            i2.IsMock().Should().BeTrue();
+            i2.IsMockType().Should().BeTrue();
             sut.Mock.Should().BeSameAs(Mock.Get(i1));
 
             return Task.CompletedTask;
@@ -62,7 +62,7 @@ namespace AutoFixture.Extensions.Tests
 
             // Assert
             i1.Should().NotBeNull();
-            i1.IsMock().Should().BeTrue();
+            i1.IsMockType().Should().BeTrue();
             i1.Name.Should().NotBeNullOrEmpty();
             i1.Number.Should().NotBe(default);
             i1.ConcurrencyStamp.Should().NotBe(default(Guid));
@@ -142,12 +142,12 @@ namespace AutoFixture.Extensions.Tests
                 instance.Should().NotBeNull();
 
                 instance.ComplexChild.Should().NotBeNull();
-                instance.ComplexChild.IsMock().Should().BeTrue();
+                instance.ComplexChild.IsMockType().Should().BeTrue();
                 instance.ComplexChild.Should().BeSameAs(complexChild); // Same instance for created fixture
                 instance.ComplexChild.Should().BeEquivalentTo(ComplexChildFixture._object); // Similar to the setup object. 
 
                 instance.SimpleChild.Should().NotBeNull();
-                instance.SimpleChild!.IsMock().Should().BeTrue();
+                instance.SimpleChild!.IsMockType().Should().BeTrue();
                 instance.SimpleChild.Should().BeSameAs(simpleChild);
 
                 instance.StructChild.Should().NotBeNull();
@@ -179,12 +179,12 @@ namespace AutoFixture.Extensions.Tests
                 instance.Should().NotBeNull();
 
                 instance.ComplexChild.Should().NotBeNull();
-                instance.ComplexChild.IsMock().Should().BeTrue();
+                instance.ComplexChild.IsMockType().Should().BeTrue();
                 instance.ComplexChild.Should().BeSameAs(complexChild); // Same instance for created fixture
                 instance.ComplexChild.Should().BeEquivalentTo(ComplexChildFixture._object); // Similar to the setup object. 
 
                 instance.SimpleChild.Should().NotBeNull();
-                instance.SimpleChild!.IsMock().Should().BeTrue();
+                instance.SimpleChild!.IsMockType().Should().BeTrue();
                 instance.SimpleChild.Should().BeSameAs(simpleChild);
 
                 instance.StructChild.Should().NotBeNull();
@@ -216,7 +216,7 @@ namespace AutoFixture.Extensions.Tests
             foreach (var instance in instances)
             {
                 instance.Should().NotBeNull();
-                instance.IsMock().Should().BeTrue();
+                instance.IsMockType().Should().BeTrue();
                 instance.Should().NotBeEquivalentTo(oldObject);
                 instance.Should().BeSameAs(mock.Object);
                 instance.Name.Should().Be("OverridenText");
@@ -225,12 +225,12 @@ namespace AutoFixture.Extensions.Tests
 
                 // ComplexChild is injected via constructor, should be the same
                 instance.ComplexChild.Should().NotBeNull();
-                instance.ComplexChild.IsMock().Should().BeTrue();
+                instance.ComplexChild.IsMockType().Should().BeTrue();
                 instance.ComplexChild.Should().BeSameAs(complexChild);
 
                 // SimpleChild is injected via constructor, should be the same
                 instance.SimpleChild.Should().NotBeNull();
-                instance.SimpleChild!.IsMock().Should().BeTrue();
+                instance.SimpleChild!.IsMockType().Should().BeTrue();
                 instance.SimpleChild.Should().BeSameAs(simpleChild);
             }
 
@@ -259,7 +259,7 @@ namespace AutoFixture.Extensions.Tests
             foreach (var instance in instances)
             {
                 instance.Should().NotBeNull();
-                instance.IsMock().Should().BeTrue();
+                instance.IsMockType().Should().BeTrue();
                 instance.Should().NotBeEquivalentTo(oldObject);
                 instance.Should().BeSameAs(mock.Object);
                 instance.Name.Should().Be("OverridenText");
@@ -268,7 +268,7 @@ namespace AutoFixture.Extensions.Tests
 
                 // ComplexChild is injected via constructor, should be the same
                 instance.ComplexChild.Should().NotBeNull();
-                instance.ComplexChild.IsMock().Should().BeTrue();
+                instance.ComplexChild.IsMockType().Should().BeTrue();
                 instance.ComplexChild.Should().BeSameAs(complexChild);
 
                 // SimpleChild is NOT injected via constructor, should be null

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using AutoMapper.Internal;
 
 namespace AutoFixture.Extensions
 {
@@ -42,5 +43,10 @@ namespace AutoFixture.Extensions
         {
             return typeof(MulticastDelegate).IsAssignableFrom(type.GetTypeInfo().BaseType);
         }
+
+        public static Type GetKeyValueType(this Type type) => type.GetGenericInterface(typeof(KeyValuePair<,>));
+
+        // ReSharper disable once ConditionIsAlwaysTrueOrFalse
+        public static bool IsKeyValueType(this Type type) => GetKeyValueType(type) != null;
     }
 }

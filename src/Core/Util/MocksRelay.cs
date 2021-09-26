@@ -1,7 +1,9 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using AutoFixture.Kernel;
+using AutoMapper.Internal;
 using EnsureThat;
 using Moq;
 
@@ -57,7 +59,7 @@ namespace AutoFixture.Extensions
             if (!MockableSpecification.IsSatisfiedBy(request))
                 return new NoSpecimen();
 
-            if (!(request is Type t))
+            if (request is not Type t)
                 return new NoSpecimen();
 
             object obj = ResolveMock(t, context);
@@ -76,18 +78,33 @@ namespace AutoFixture.Extensions
 
         private static object ResolveMock(Type t, ISpecimenContext context)
         {
-            if (t.IsValueType)
+            if (t.IsGenericType)
             {
-                if (t.IsGenericType)
+                // Generic types
+                Type[] genericArguments = t.GetTypeInfo().GetGenericArguments();
+                if (t.IsNullableType())
                 {
-                    // Nullable<type>
-                    var paramType = t.GetTypeInfo().GetGenericArguments().Single();
-                    return context.Resolve(paramType);
+                    return context.Resolve(genericArguments[0]);
                 }
-                
-                return context.Resolve(t);
+
+                if (t.IsDictionaryType())
+                {
+                    return context.Resolve(typeof(Dictionary<,>).MakeGenericType(genericArguments));
+                }
+
+                if (t.IsKeyValueType())
+                {
+                    return context.Resolve(typeof(KeyValuePair<,>).MakeGenericType(genericArguments));
+                }
             }
 
+            if (t.IsValueType)
+            {
+                //return context.Resolve(t);
+                return Activator.CreateInstance(t)!;
+            }
+
+            // Try resolve the object itself
             var mockType = typeof(Mock<>).MakeGenericType(t);
             return context.Resolve(mockType);
         }

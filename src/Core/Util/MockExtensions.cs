@@ -17,7 +17,7 @@ namespace AutoFixture.Extensions
         /// <summary>
         /// Determines whether the current object <paramref name="obj"/> is a <see cref="Mock"/> or an instance of <see cref="Mock"/>
         /// </summary>
-        public static bool IsMock<T>(this T obj) where T : class
+        public static bool IsMockType<T>(this T obj) where T : class
         {
             var result = IsMockObject(typeof(T));
             if (!result)

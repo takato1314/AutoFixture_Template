@@ -44,6 +44,9 @@ namespace AutoFixture.Extensions.Tests
 
         public ICollection<string> StringCollection { get; set; } = new List<string>();
 
+        public IDictionary<string, string> DictionaryCollection { get; set; } =
+            new Dictionary<string, string>();
+
         public Func<string, string> Function { get; set; } = s => s;
         
         public string GetValue()
