@@ -13,6 +13,11 @@ namespace AutoFixture.Extensions.Tests
         public SimpleChildFixture(IFixture fixture) : base(fixture)
         {
         }
+
+        /// <inheritdoc />
+        public SimpleChildFixture(IFixture fixture, SimpleChild item) : base(fixture, item)
+        {
+        }
     }
 
 
@@ -46,7 +51,39 @@ namespace AutoFixture.Extensions.Tests
 
             return Task.CompletedTask;
         }
-        
+
+        [Theory, AutoMoqData]
+        public Task CreateAnotherFixtures_TestEquivalency(IFixture fixture)
+        {
+            // Arrange
+            var injected = new SimpleChild("OverridenText", 111)
+            {
+                ConcurrencyStamp = new Guid("6f55a677-c447-45f0-8e71-95c7b73fa889")
+            };
+            var sut = new SimpleChildFixture(fixture, injected);
+
+            // Act
+            var i0 = new SimpleChild();
+            var i1 = sut.Object;
+            var i2 = fixture.Create<SimpleChild>();
+
+            // Assert
+            // Should not be equivalent, because fixture will use a different instance
+            i1.Should().NotBeNull();
+            i1.Should().NotBeEquivalentTo(i0);
+            i2.Should().NotBeEquivalentTo(i0);
+
+            // Should be same, because the fixture share the same instance.
+            i1.Should().BeSameAs(i2);
+            i1.Should().BeSameAs(injected);
+
+            // Should not be a mock
+            i1.IsMockType().Should().BeFalse();
+            i2.IsMockType().Should().BeFalse();
+
+            return Task.CompletedTask;
+        }
+
         [Theory, AutoMoqData]
         public Task GetObject_ShouldReturnSameObjects(IFixture fixture)
         {

@@ -18,12 +18,21 @@ namespace AutoFixture.Extensions
             Mock = Moq.Mock.Get(Object);
         }
 
+        /// <inheritdoc cref="BaseFixtureSetup{TFixture}"/>
+        protected BaseFixtureSetup(
+            IFixture fixture,
+            T item)
+        {
+            Fixture = fixture;
+            Inject(item);
+        }
+
         #region Properties
-        
+
         protected IFixture Fixture { get; }
 
         /// <inheritdoc cref="IFixtureSetup{T}.Object" />
-        public T Object { get; protected set; }
+        public T Object { get; protected set; } = null!;
 
         T IFixtureSetup<T>.Object
         {
