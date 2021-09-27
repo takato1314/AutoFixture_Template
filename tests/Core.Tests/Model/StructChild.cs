@@ -46,7 +46,7 @@ namespace AutoFixture.Extensions.Tests
         /// <summary>
         /// Returns true if the host is set.
         /// </summary>
-        public bool HasValue => !string.IsNullOrEmpty(_value);
+        public bool HasValue => !string.IsNullOrEmpty(Value);
 
         /// <summary>
         /// Returns the value of the host part of the value. The port is removed if it was present.

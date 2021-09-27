@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Reflection;
 using AutoFixture.Kernel;
 using AutoMapper.Internal;
@@ -76,6 +75,8 @@ namespace AutoFixture.Extensions
             }
         }
 
+        #region Private
+
         private static object ResolveMock(Type t, ISpecimenContext context)
         {
             if (t.IsGenericType)
@@ -100,13 +101,43 @@ namespace AutoFixture.Extensions
 
             if (t.IsValueType)
             {
-                //return context.Resolve(t);
-                return Activator.CreateInstance(t)!;
+                return ResolveValueTypes(t, context);
             }
 
             // Try resolve the object itself
             var mockType = typeof(Mock<>).MakeGenericType(t);
             return context.Resolve(mockType);
+        }
+
+        private static object ResolveValueTypes(Type t, ISpecimenContext context)
+        {
+            var ctor = t.GetConstructors()[^1];
+            var ctorParams = ctor.GetParameters();
+            object specimen;
+
+            if (t.HasWritableProperties())
+            {
+                specimen = Activator.CreateInstance(t)!;
+                foreach (PropertyInfo property in t.GetProperties())
+                {
+                    object obj = context.Resolve(property);
+                    if (obj is not OmitSpecimen && property.CanWrite)
+                        property.SetValue(specimen, obj);
+                }
+            }
+            else
+            {
+                // Get and resolve the first ctor parameters
+                var parameters = new object[ctorParams.Length];
+                for (var i = 0; i < ctorParams.Length; i++)
+                {
+                    object obj = context.Resolve(ctorParams[i]);
+                    parameters[i] = obj is not OmitSpecimen ? obj : null!;
+                }
+                specimen = Activator.CreateInstance(t, parameters)!;
+            }
+
+            return specimen;
         }
 
         private class IsMockableSpecification : IRequestSpecification
@@ -116,5 +147,7 @@ namespace AutoFixture.Extensions
                 return request is Type;
             }
         }
+
+        #endregion
     }
 }

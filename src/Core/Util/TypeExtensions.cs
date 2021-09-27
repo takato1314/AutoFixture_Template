@@ -44,6 +44,11 @@ namespace AutoFixture.Extensions
             return typeof(MulticastDelegate).IsAssignableFrom(type.GetTypeInfo().BaseType);
         }
 
+        public static bool HasWritableProperties(this Type type)
+        {
+            return type.GetProperties().Any(property => property.CanWrite);
+        }
+
         public static Type GetKeyValueType(this Type type) => type.GetGenericInterface(typeof(KeyValuePair<,>));
 
         // ReSharper disable once ConditionIsAlwaysTrueOrFalse

@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using AutoFixture.AutoMoq;
@@ -31,12 +30,14 @@ namespace AutoFixture.Extensions
         public static IFixture CreateFixture()
         {
             // Setup mock for all types to use mocks
-            bool ConcreteFilter(ISpecimenBuilder sb) => !(sb is MethodInvoker);
+            bool ConcreteFilter(ISpecimenBuilder sb) => sb is not MethodInvoker;
             var defaultEngine = new FilteringRelays(ConcreteFilter);
 
             // Customizations
-            var fixture = new AutoFixture.Fixture(defaultEngine)
-                .Customize(new AutoPopulatedMoqCustomization());
+            var fixture = new Fixture(defaultEngine).Customize(new CompositeCustomization(new AutoPopulatedMoqCustomization()));
+            //fixture.Customizations.Add(new DictionaryRelay());
+            //fixture.Customizations.Add(new TypeRelay(typeof(IDictionary<,>), typeof(IDictionary<,>)));
+            //fixture.Customizations.Add(new TypeRelay(typeof(KeyValuePair<,>), typeof(KeyValuePair<,>)));
             var postprocessor = (Postprocessor)fixture.Customizations.Single(f => f is Postprocessor);
             if (postprocessor.Command is CompositeSpecimenCommand command)
             {
@@ -45,13 +46,6 @@ namespace AutoFixture.Extensions
                 var index = Array.IndexOf(commands, commands.Single(c => c is MockVirtualMethodsCommand));
                 commands[index] = new MocksVirtualMethodsCommand();
             }
-
-            // Residue Collectors
-            //fixture.Customizations.Add(new DictionaryRelay());
-            //fixture.Customizations.Add(new TypeRelay(typeof(IDictionary<,>), typeof(IDictionary<,>)));
-            //fixture.Customizations.Add(new TypeRelay(typeof(KeyValuePair<,>), typeof(KeyValuePair<,>)));
-            //fixture.ResidueCollectors.Add(new TypeRelay(typeof(IDictionary<,>), typeof(IDictionary<,>)));
-            //fixture.ResidueCollectors.Add(new TypeRelay(typeof(KeyValuePair<,>), typeof(KeyValuePair<,>)));
 
             // Behaviors
             fixture.Behaviors.OfType<ThrowingRecursionBehavior>()

@@ -75,9 +75,9 @@ namespace AutoFixture.Extensions.Tests
 
             // Assert
             structChild.Should().NotBe(default);
-            //structChild.HasValue.Should().BeTrue();
-            //structChild.Host.Should().NotBeNullOrEmpty();
-            //structChild.Port.Should().BeGreaterThan(0);
+            structChild.HasValue.Should().BeTrue();
+            structChild.Host.Should().NotBeNullOrEmpty();
+            structChild.Port.Should().BeGreaterThan(0);
         }
 
         [Theory, AutoMoqData]
