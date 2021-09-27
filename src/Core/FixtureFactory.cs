@@ -35,9 +35,6 @@ namespace AutoFixture.Extensions
 
             // Customizations
             var fixture = new Fixture(defaultEngine).Customize(new CompositeCustomization(new AutoPopulatedMoqCustomization()));
-            //fixture.Customizations.Add(new DictionaryRelay());
-            //fixture.Customizations.Add(new TypeRelay(typeof(IDictionary<,>), typeof(IDictionary<,>)));
-            //fixture.Customizations.Add(new TypeRelay(typeof(KeyValuePair<,>), typeof(KeyValuePair<,>)));
             var postprocessor = (Postprocessor)fixture.Customizations.Single(f => f is Postprocessor);
             if (postprocessor.Command is CompositeSpecimenCommand command)
             {
