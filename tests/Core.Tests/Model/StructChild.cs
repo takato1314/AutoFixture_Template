@@ -18,7 +18,7 @@ namespace AutoFixture.Extensions.Tests
 
         public StructChild(string host, int port)
         {
-            Ensure.That(host).IsNotNullOrEmpty();
+            ValidateHost(host);
             Ensure.That(port).IsGt(0);
 
             int index;
@@ -253,6 +253,14 @@ namespace AutoFixture.Extensions.Tests
         #endregion
 
         #region Private
+
+        private static void ValidateHost(string host)
+        {
+            if (string.IsNullOrEmpty(host) || host.StartsWith("host"))
+            {
+                throw new ArgumentException("Invalid host name");
+            }
+        }
 
         /// <summary>
         /// Parses the current value. IPv6 addresses will have brackets added if they are missing.

@@ -123,7 +123,16 @@ namespace AutoFixture.Extensions
                     object obj = context.Resolve(ctorParams[i]);
                     parameters[i] = obj is not OmitSpecimen ? obj : null!;
                 }
-                specimen = Activator.CreateInstance(t, parameters)!;
+
+                try
+                {
+                    specimen = Activator.CreateInstance(t, parameters)!;
+                }
+                catch (Exception)
+                {
+                    // Unable to create object due to exceptions thrown from ctor
+                    specimen = Activator.CreateInstance(t)!;
+                }
             }
 
             return specimen;

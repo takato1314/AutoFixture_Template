@@ -15,7 +15,7 @@ namespace AutoFixture.Extensions.Tests
         {
             // Use mock setup for getter only properties.
             Mock!.Setup(m => m.ComplexChild).Returns(new ComplexChildFixture(fixture).Object);
-            Mock.Setup(m => m.StructChild).Returns(new StructChild("host", 80));
+            Mock.Setup(m => m.StructChild).Returns(new StructChild("testHost", 80));
         }
     }
 
@@ -122,7 +122,7 @@ namespace AutoFixture.Extensions.Tests
         public Task GetObject_ChildShouldBeSameFixture(IFixture fixture)
         {
             // Arrange
-            var structChild = new StructChild("host", 80);
+            var structChild = new StructChild("testHost", 80);
             var simpleChild = new SimpleChildFixture(fixture).Object;
             var complexChildFixture = new ComplexChildFixture(fixture);
             var complexChild = complexChildFixture.Object;
