@@ -87,9 +87,21 @@ namespace AutoFixture.Extensions.Tests
             var dictionary = fixture.Create<Dictionary<string, int>>();
 
             // Assert
-            dictionary.Should().BeEmpty();
-            //dictionary.Keys.Should().NotBeNullOrEmpty();
-            //dictionary.Values.Should().NotBeNullOrEmpty();
+            dictionary.Should().NotBeNullOrEmpty();
+            dictionary.Keys.Should().NotBeNullOrEmpty();
+            dictionary.Values.Should().NotBeNullOrEmpty();
+        }
+
+        [Theory, AutoMoqData]
+        public void Create_OnKeyValuePairTypes_ShouldReturnValues(IFixture fixture)
+        {
+            // Act
+            var kvp = fixture.Create<KeyValuePair<string, int>>();
+
+            // Assert
+            kvp.Should().NotBeNull();
+            kvp.Key.Should().NotBeNullOrEmpty();
+            kvp.Value.Should().BeGreaterThan(0);
         }
 
         [Theory, AutoMoqData]
@@ -128,6 +140,7 @@ namespace AutoFixture.Extensions.Tests
         [Theory, AutoMoqData]
         public void Create_OnMockedConcreteType_ShouldNotBeNull(IFixture fixture)
         {
+            var simpleChild = fixture.Create<SimpleChild>();
             var i1 = fixture.Create<ComplexChild>();
 
             // AutoMock should mock and return mock types for interfaces and abstract classes by default
@@ -141,9 +154,8 @@ namespace AutoFixture.Extensions.Tests
             i1.Nullable.Should().NotBe(default);
             i1.StringCollection.Should().NotBeNullOrEmpty();
             i1.StringCollection.All(_ => !string.IsNullOrEmpty(_)).Should().BeTrue();
-            i1.DictionaryCollection.Should().BeEmpty();
-            //i1.DictionaryCollection.All(_ => !string.IsNullOrEmpty(_.Value)).Should().BeTrue();
-            //i1.DictionaryCollection.Should().NotContainEquivalentOf("testString");
+            i1.DictionaryCollection.Count.Should().BeGreaterThan(1);
+            i1.DictionaryCollection.Should().NotContainEquivalentOf(simpleChild);
 
             i1.Name.Should().NotBe("foo");
             i1.Number.Should().NotBe(42);
@@ -160,9 +172,9 @@ namespace AutoFixture.Extensions.Tests
             i1.Name = "foo";
             i1.Number = 42;
             i1.StringCollection = new List<string>();
-            mock.Setup(_ => _.DictionaryCollection).Returns(new Dictionary<string, string>
+            mock.Setup(_ => _.DictionaryCollection).Returns(new Dictionary<string, SimpleChild>
             {
-                {"test", "testString"}
+                {nameof(SimpleChild), simpleChild}
             });
 
             mock.Should().NotBeNull();
@@ -170,7 +182,7 @@ namespace AutoFixture.Extensions.Tests
             i1.Number.Should().Be(42);
             i1.StringCollection.Should().BeEmpty();
             i1.GetValue().Should().Be("SomeValue");
-            i1.DictionaryCollection["test"].Should().Be("testString");
+            i1.DictionaryCollection[nameof(SimpleChild)].Should().Be(simpleChild);
         }
 
         [Theory, AutoMoqData]

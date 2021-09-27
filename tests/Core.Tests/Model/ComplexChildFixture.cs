@@ -26,6 +26,8 @@ namespace AutoFixture.Extensions.Tests
 
         #region Properties
 
+        internal static readonly SimpleChild _simpleChild = new SimpleChild(nameof(SimpleChild), 100);
+
         // ReSharper disable once InconsistentNaming
         internal static readonly ComplexChild _object = new()
         {
@@ -38,6 +40,10 @@ namespace AutoFixture.Extensions.Tests
             StringCollection = new List<string>
             {
                 "FixtureSetupStringCollection"
+            },
+            DictionaryCollection = new Dictionary<string, SimpleChild>
+            {
+                {nameof(SimpleChild), _simpleChild}
             }
         };
 
@@ -96,7 +102,9 @@ namespace AutoFixture.Extensions.Tests
             i1.Boolean.Should().NotBeNull();
             i1.StringCollection.Should().NotBeNullOrEmpty();
             i1.StringCollection.All(_ => !_.IsNullOrEmpty()).Should().BeTrue();
-            i1.DictionaryCollection.Should().BeEmpty();
+            i1.DictionaryCollection.Should().NotBeNullOrEmpty();
+            i1.DictionaryCollection.Should().HaveCount(1);
+            i1.DictionaryCollection[nameof(SimpleChild)].Should().Be(ComplexChildFixture._simpleChild);
 
             // All instances should be same as fixture
             var instances = fixture.CreateMany<ComplexChild>();

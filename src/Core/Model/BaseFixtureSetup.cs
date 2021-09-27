@@ -12,15 +12,15 @@ namespace AutoFixture.Extensions
         protected BaseFixtureSetup(
             IFixture fixture)
         {
-            _fixture = fixture;
+            Fixture = fixture;
 
             Object = CreateObject();
             Mock = Moq.Mock.Get(Object);
         }
 
         #region Properties
-
-        private readonly IFixture _fixture;
+        
+        protected IFixture Fixture { get; }
 
         /// <inheritdoc cref="IFixtureSetup{T}.Object" />
         public T Object { get; protected set; }
@@ -46,7 +46,7 @@ namespace AutoFixture.Extensions
             Object = item;
             Mock = item.IsMockType() ? Moq.Mock.Get(item) : null;
 
-            _fixture.Inject(item);
+            Fixture.Inject(item);
         }
 
         #region Private
@@ -56,7 +56,7 @@ namespace AutoFixture.Extensions
         /// </summary>
         private T CreateObject()
         {
-            return _fixture.Freeze<T>();
+            return Fixture.Freeze<T>();
         }
 
         #endregion

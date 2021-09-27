@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Reflection;
 using AutoFixture.Kernel;
 using AutoMapper.Internal;
@@ -86,16 +85,6 @@ namespace AutoFixture.Extensions
                 if (t.IsNullableType())
                 {
                     return context.Resolve(genericArguments[0]);
-                }
-
-                if (t.IsDictionaryType())
-                {
-                    return context.Resolve(typeof(Dictionary<,>).MakeGenericType(genericArguments));
-                }
-
-                if (t.IsKeyValueType())
-                {
-                    return context.Resolve(typeof(KeyValuePair<,>).MakeGenericType(genericArguments));
                 }
             }
 
