@@ -15,7 +15,12 @@ namespace AutoFixture.Extensions.Tests
         {
         }
 
-        protected override void Setup()
+        /// <inheritdoc />
+        public ComplexParentFixture(IFixture fixture, ComplexParent item) : base(fixture, item)
+        {
+        }
+
+        public override void Setup()
         {
             // Use mock setup for getter only properties.
             Mock!.Setup(m => m.ComplexChild).Returns(new ComplexChildFixture(Fixture).Object);
@@ -109,9 +114,9 @@ namespace AutoFixture.Extensions.Tests
             i2.ComplexChild.Should().BeSameAs(i3.ComplexChild);
             i2.StructChild.Should().BeEquivalentTo(i3.StructChild);
 
-            i1.ComplexChild.Should().BeEquivalentTo(ComplexChildFixture._object);
-            i2.ComplexChild.Should().BeEquivalentTo(ComplexChildFixture._object);
-            i3.ComplexChild.Should().BeEquivalentTo(ComplexChildFixture._object);
+            i1.ComplexChild.Should().BeEquivalentTo(ComplexChildFixture.Instance);
+            i2.ComplexChild.Should().BeEquivalentTo(ComplexChildFixture.Instance);
+            i3.ComplexChild.Should().BeEquivalentTo(ComplexChildFixture.Instance);
 
             // Should share same references
             i1.SimpleChild.Number = 1234;
@@ -149,7 +154,7 @@ namespace AutoFixture.Extensions.Tests
                 instance.ComplexChild.IsMockType().Should().BeTrue();
                 instance.ComplexChild.Should().BeSameAs(complexChild); // Same instance for created fixture
                 instance.ComplexChild.Should()
-                    .BeEquivalentTo(ComplexChildFixture._object); // Similar to the setup object. 
+                    .BeEquivalentTo(ComplexChildFixture.Instance); // Similar to the setup object. 
 
                 instance.SimpleChild.Should().NotBeNull();
                 instance.SimpleChild!.IsMockType().Should().BeTrue();
@@ -187,7 +192,7 @@ namespace AutoFixture.Extensions.Tests
                 instance.ComplexChild.IsMockType().Should().BeTrue();
                 instance.ComplexChild.Should().BeSameAs(complexChild); // Same instance for created fixture
                 instance.ComplexChild.Should()
-                    .BeEquivalentTo(ComplexChildFixture._object); // Similar to the setup object. 
+                    .BeEquivalentTo(ComplexChildFixture.Instance); // Similar to the setup object. 
 
                 instance.SimpleChild.Should().NotBeNull();
                 instance.SimpleChild!.IsMockType().Should().BeTrue();
@@ -200,21 +205,21 @@ namespace AutoFixture.Extensions.Tests
         }
 
         [Theory, AutoMoqData]
-        public Task TestInject_ShouldReturnOverwrittenValues(IFixture fixture)
+        public Task TestInject_Ext_ShouldReturnInjectedObject(IFixture fixture)
         {
             // Arrange
             var simpleChild = new SimpleChildFixture(fixture).Object;
             var complexChild = new ComplexChildFixture(fixture).Object;
-            var mock = new Mock<ComplexParent>(complexChild, simpleChild)
+            var injected = new Mock<ComplexParent>(complexChild, simpleChild)
                 { CallBase = true, DefaultValue = DefaultValue.Mock };
-            mock.SetupProperty(_ => _.Name, "OverridenText");
-            mock.SetupProperty(_ => _.Number, 111);
-            mock.SetupProperty(_ => _.ConcurrencyStamp, new Guid("6f55a677-c447-45f0-8e71-95c7b73fa889"));
+            injected.SetupProperty(_ => _.Name, "OverridenText");
+            injected.SetupProperty(_ => _.Number, 111);
+            injected.SetupProperty(_ => _.ConcurrencyStamp, new Guid("6f55a677-c447-45f0-8e71-95c7b73fa889"));
             var sut = new ComplexParentFixture(fixture);
             var oldObject = sut.Object;
 
             // Act
-            sut.Inject(mock.Object);
+            sut.Inject(injected.Object);
 
             // Assert
             oldObject.Should().NotBeNull();
@@ -225,7 +230,7 @@ namespace AutoFixture.Extensions.Tests
                 instance.Should().NotBeNull();
                 instance.IsMockType().Should().BeTrue();
                 instance.Should().NotBeEquivalentTo(oldObject);
-                instance.Should().BeSameAs(mock.Object);
+                instance.Should().BeSameAs(injected.Object);
                 instance.Name.Should().Be("OverridenText");
                 instance.Number.Should().Be(111);
                 instance.ConcurrencyStamp.ToString().Should().Be("6f55a677-c447-45f0-8e71-95c7b73fa889");
@@ -245,19 +250,19 @@ namespace AutoFixture.Extensions.Tests
         }
 
         [Theory, AutoMoqData]
-        public Task TestInject_AnotherWay_ShouldReturnOverwrittenValues(IFixture fixture)
+        public Task TestInject_FixtureInject_ShouldReturnInjectedObject(IFixture fixture)
         {
             // Arrange
             var complexChild = new ComplexChildFixture(fixture).Object;
-            var mock = new Mock<ComplexParent>(complexChild) { CallBase = true, DefaultValue = DefaultValue.Mock };
-            mock.SetupProperty(_ => _.Name, "OverridenText");
-            mock.SetupProperty(_ => _.Number, 111);
-            mock.SetupProperty(_ => _.ConcurrencyStamp, new Guid("6f55a677-c447-45f0-8e71-95c7b73fa889"));
+            var injected = new Mock<ComplexParent>(complexChild) { CallBase = true, DefaultValue = DefaultValue.Mock };
+            injected.SetupProperty(_ => _.Name, "OverridenText");
+            injected.SetupProperty(_ => _.Number, 111);
+            injected.SetupProperty(_ => _.ConcurrencyStamp, new Guid("6f55a677-c447-45f0-8e71-95c7b73fa889"));
             var sut = new ComplexParentFixture(fixture);
             var oldObject = sut.Object;
 
             // Act
-            fixture.Inject(sut, mock.Object);
+            fixture.Inject(sut, injected.Object);
 
             // Assert
             oldObject.Should().NotBeNull();
@@ -268,7 +273,43 @@ namespace AutoFixture.Extensions.Tests
                 instance.Should().NotBeNull();
                 instance.IsMockType().Should().BeTrue();
                 instance.Should().NotBeEquivalentTo(oldObject);
-                instance.Should().BeSameAs(mock.Object);
+                instance.Should().BeSameAs(injected.Object);
+                instance.Name.Should().Be("OverridenText");
+                instance.Number.Should().Be(111);
+                instance.ConcurrencyStamp.ToString().Should().Be("6f55a677-c447-45f0-8e71-95c7b73fa889");
+
+                // ComplexChild is injected via constructor, should be the same
+                instance.ComplexChild.Should().NotBeNull();
+                instance.ComplexChild.IsMockType().Should().BeTrue();
+                instance.ComplexChild.Should().BeSameAs(complexChild);
+
+                // SimpleChild is NOT injected via constructor, should be null
+                instance.SimpleChild.Should().BeNull();
+            }
+
+            return Task.CompletedTask;
+        }
+
+        [Theory, AutoMoqData]
+        public Task TestInject_Ctor_ShouldReturnInjectedObject(IFixture fixture)
+        {
+            // Arrange
+            var complexChild = new ComplexChildFixture(fixture).Object;
+            var injected = new Mock<ComplexParent>(complexChild) { CallBase = true, DefaultValue = DefaultValue.Mock };
+            injected.SetupProperty(_ => _.Name, "OverridenText");
+            injected.SetupProperty(_ => _.Number, 111);
+            injected.SetupProperty(_ => _.ConcurrencyStamp, new Guid("6f55a677-c447-45f0-8e71-95c7b73fa889"));
+
+            // Act
+            var sut = new ComplexParentFixture(fixture, injected.Object);
+
+            // Assert
+            var instances = new List<ComplexParent> { sut.Object, fixture.Create<ComplexParent>() };
+            foreach (var instance in instances)
+            {
+                instance.Should().NotBeNull();
+                instance.IsMockType().Should().BeTrue();
+                instance.Should().BeSameAs(injected.Object);
                 instance.Name.Should().Be("OverridenText");
                 instance.Number.Should().Be(111);
                 instance.ConcurrencyStamp.ToString().Should().Be("6f55a677-c447-45f0-8e71-95c7b73fa889");

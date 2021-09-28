@@ -1,9 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 
-// ReSharper disable InconsistentNaming
-#pragma warning disable 414
-
 namespace AutoFixture.Extensions.Tests
 {
     public class ComplexChild : IHasProperties
@@ -27,7 +24,7 @@ namespace AutoFixture.Extensions.Tests
 
         #endregion
 
-        public readonly string _privateString = "fieldString";
+        public readonly string PrivateString = "fieldString";
 
         /// <inheritdoc />
         public string Name { get; set; } = nameof(ComplexChild);

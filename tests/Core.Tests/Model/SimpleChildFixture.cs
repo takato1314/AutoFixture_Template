@@ -53,38 +53,6 @@ namespace AutoFixture.Extensions.Tests
         }
 
         [Theory, AutoMoqData]
-        public Task CreateAnotherFixtures_TestEquivalency(IFixture fixture)
-        {
-            // Arrange
-            var injected = new SimpleChild("OverridenText", 111)
-            {
-                ConcurrencyStamp = new Guid("6f55a677-c447-45f0-8e71-95c7b73fa889")
-            };
-            var sut = new SimpleChildFixture(fixture, injected);
-
-            // Act
-            var i0 = new SimpleChild();
-            var i1 = sut.Object;
-            var i2 = fixture.Create<SimpleChild>();
-
-            // Assert
-            // Should not be equivalent, because fixture will use a different instance
-            i1.Should().NotBeNull();
-            i1.Should().NotBeEquivalentTo(i0);
-            i2.Should().NotBeEquivalentTo(i0);
-
-            // Should be same, because the fixture share the same instance.
-            i1.Should().BeSameAs(i2);
-            i1.Should().BeSameAs(injected);
-
-            // Should not be a mock
-            i1.IsMockType().Should().BeFalse();
-            i2.IsMockType().Should().BeFalse();
-
-            return Task.CompletedTask;
-        }
-
-        [Theory, AutoMoqData]
         public Task GetObject_ShouldReturnSameObjects(IFixture fixture)
         {
             // Arrange
@@ -112,7 +80,7 @@ namespace AutoFixture.Extensions.Tests
         }
 
         [Theory, AutoMoqData]
-        public Task TestInject_ShouldReturnInjectedObject(IFixture fixture)
+        public Task TestInject_Ext_ShouldReturnInjectedObject(IFixture fixture)
         {
             // Arrange
             var injected = new SimpleChild("OverridenText", 111)
@@ -145,7 +113,7 @@ namespace AutoFixture.Extensions.Tests
         }
 
         [Theory, AutoMoqData]
-        public Task TestInject_AnotherWay_ShouldReturnInjectedObject(IFixture fixture)
+        public Task TestInject_FixtureInject_ShouldReturnInjectedObject(IFixture fixture)
         {
             // Arrange
             var injected = new SimpleChild("OverridenText", 111)
@@ -176,5 +144,37 @@ namespace AutoFixture.Extensions.Tests
 
             return Task.CompletedTask;
         }
+
+
+        [Theory, AutoMoqData]
+        public Task TestInject_Ctor_ShouldReturnInjectedObject(IFixture fixture)
+        {
+            // Arrange
+            var i0 = new SimpleChild();
+            var injected = new SimpleChild("OverridenText", 111)
+            {
+                ConcurrencyStamp = new Guid("6f55a677-c447-45f0-8e71-95c7b73fa889")
+            };
+
+            // Act
+            var sut = new SimpleChildFixture(fixture, injected);
+
+            // Assert
+            var instances = new List<SimpleChild> { sut.Object, fixture.Create<SimpleChild>() };
+            foreach (var instance in instances)
+            {
+                instance.Should().NotBeNull();
+                instance.IsMockType().Should().BeFalse();
+                instance.Should().BeOfType<SimpleChild>();
+                instance.Should().NotBeEquivalentTo(i0);
+                instance.Should().BeSameAs(injected);
+                instance.Name.Should().Be("OverridenText");
+                instance.Number.Should().Be(111);
+                instance.ConcurrencyStamp.ToString().Should().Be("6f55a677-c447-45f0-8e71-95c7b73fa889");
+            }
+            
+            return Task.CompletedTask;
+        }
+
     }
 }

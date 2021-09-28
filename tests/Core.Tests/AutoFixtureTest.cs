@@ -5,7 +5,6 @@ using System.Linq;
 using FluentAssertions;
 using Moq;
 using Xunit;
-// ReSharper disable PossibleMultipleEnumeration
 
 #pragma warning disable 618
 
@@ -522,7 +521,7 @@ namespace AutoFixture.Extensions.Tests
         [Theory, AutoMoqData]
         public void FreezeAndCreateSequences_ShouldReturnSameInstances(IFixture fixture)
         {
-            var seq = fixture.Freeze<IEnumerable<int>>();
+            var seq = fixture.Freeze<IEnumerable<int>>().ToList();
             var list = fixture.Create<List<int>>();
             var iList = fixture.Create<IList<int>>();
             var collection = fixture.Create<Collection<int>>();

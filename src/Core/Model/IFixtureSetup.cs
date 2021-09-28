@@ -20,5 +20,10 @@
         /// Also see <see cref="FixtureRegistrar.Inject{T}"/>.
         /// </summary>
         public void Inject(T item);
+
+        /// <summary>
+        /// Setup expected values for Mock or <see cref="Object"/>
+        /// </summary>
+        public void Setup();
     }
 }

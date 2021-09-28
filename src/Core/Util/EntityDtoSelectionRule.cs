@@ -3,8 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using FluentAssertions.Equivalency;
 
-// ReSharper disable UnassignedGetOnlyAutoProperty
-
 namespace AutoFixture.Extensions
 {
     /// <summary>
@@ -37,6 +35,7 @@ namespace AutoFixture.Extensions
         }
 
         /// <inheritdoc />
+        // ReSharper disable once UnassignedGetOnlyAutoProperty
         public bool IncludesMembers { get; }
     }
 }
