@@ -13,8 +13,12 @@ namespace AutoFixture.Extensions.Tests
         /// <inheritdoc />
         public ComplexParentFixture(IFixture fixture) : base(fixture)
         {
+        }
+
+        protected override void Setup()
+        {
             // Use mock setup for getter only properties.
-            Mock!.Setup(m => m.ComplexChild).Returns(new ComplexChildFixture(fixture).Object);
+            Mock!.Setup(m => m.ComplexChild).Returns(new ComplexChildFixture(Fixture).Object);
             Mock.Setup(m => m.StructChild).Returns(new StructChild("testHost", 80));
         }
     }
@@ -50,7 +54,7 @@ namespace AutoFixture.Extensions.Tests
 
             return Task.CompletedTask;
         }
-        
+
         [Theory, AutoMoqData]
         public Task GetObject_ShouldReturnSameObjects(IFixture fixture)
         {
@@ -68,7 +72,7 @@ namespace AutoFixture.Extensions.Tests
             i1.ConcurrencyStamp.Should().NotBe(default(Guid));
             i1.ComplexChild.Should().NotBe(default);
             i1.SimpleChild.Should().NotBe(default);
-            i1.StructChild.Should().NotBe(default); 
+            i1.StructChild.Should().NotBe(default);
 
             // All instances should be same as fixture
             var instances = fixture.CreateMany<ComplexParent>();
@@ -132,7 +136,7 @@ namespace AutoFixture.Extensions.Tests
             var i1 = sut.Object;
             var i2 = fixture.Create<ComplexParent>();
             var i3 = new ComplexParentFixture(fixture).Object;
-            var instances = new List<ComplexParent> {i1, i2, i3};
+            var instances = new List<ComplexParent> { i1, i2, i3 };
 
             // Assert
             simpleChild.Should().NotBeNull();
@@ -144,7 +148,8 @@ namespace AutoFixture.Extensions.Tests
                 instance.ComplexChild.Should().NotBeNull();
                 instance.ComplexChild.IsMockType().Should().BeTrue();
                 instance.ComplexChild.Should().BeSameAs(complexChild); // Same instance for created fixture
-                instance.ComplexChild.Should().BeEquivalentTo(ComplexChildFixture._object); // Similar to the setup object. 
+                instance.ComplexChild.Should()
+                    .BeEquivalentTo(ComplexChildFixture._object); // Similar to the setup object. 
 
                 instance.SimpleChild.Should().NotBeNull();
                 instance.SimpleChild!.IsMockType().Should().BeTrue();
@@ -156,14 +161,14 @@ namespace AutoFixture.Extensions.Tests
 
             return Task.CompletedTask;
         }
-        
+
         [Theory, AutoMoqData]
         public Task GetObject_DI_ChildShouldBeSameFixture(
             IFixture fixture,
             [Frozen] SimpleChild simpleChild,
             [Frozen] ComplexChild complexChild,
             ComplexParent sut
-            )
+        )
         {
             // Act
             var i1 = sut;
@@ -181,7 +186,8 @@ namespace AutoFixture.Extensions.Tests
                 instance.ComplexChild.Should().NotBeNull();
                 instance.ComplexChild.IsMockType().Should().BeTrue();
                 instance.ComplexChild.Should().BeSameAs(complexChild); // Same instance for created fixture
-                instance.ComplexChild.Should().BeEquivalentTo(ComplexChildFixture._object); // Similar to the setup object. 
+                instance.ComplexChild.Should()
+                    .BeEquivalentTo(ComplexChildFixture._object); // Similar to the setup object. 
 
                 instance.SimpleChild.Should().NotBeNull();
                 instance.SimpleChild!.IsMockType().Should().BeTrue();
@@ -192,14 +198,15 @@ namespace AutoFixture.Extensions.Tests
 
             return Task.CompletedTask;
         }
-        
+
         [Theory, AutoMoqData]
         public Task TestInject_ShouldReturnOverwrittenValues(IFixture fixture)
         {
             // Arrange
             var simpleChild = new SimpleChildFixture(fixture).Object;
             var complexChild = new ComplexChildFixture(fixture).Object;
-            var mock = new Mock<ComplexParent>(complexChild, simpleChild) {CallBase = true, DefaultValue = DefaultValue.Mock};
+            var mock = new Mock<ComplexParent>(complexChild, simpleChild)
+                { CallBase = true, DefaultValue = DefaultValue.Mock };
             mock.SetupProperty(_ => _.Name, "OverridenText");
             mock.SetupProperty(_ => _.Number, 111);
             mock.SetupProperty(_ => _.ConcurrencyStamp, new Guid("6f55a677-c447-45f0-8e71-95c7b73fa889"));
@@ -211,7 +218,7 @@ namespace AutoFixture.Extensions.Tests
 
             // Assert
             oldObject.Should().NotBeNull();
-            
+
             var instances = new List<ComplexParent> { sut.Object, fixture.Create<ComplexParent>() };
             foreach (var instance in instances)
             {
@@ -277,6 +284,5 @@ namespace AutoFixture.Extensions.Tests
 
             return Task.CompletedTask;
         }
-
     }
 }

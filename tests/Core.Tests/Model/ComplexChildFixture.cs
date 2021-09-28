@@ -15,6 +15,10 @@ namespace AutoFixture.Extensions.Tests
         /// <inheritdoc />
         public ComplexChildFixture(IFixture fixture) : base(fixture)
         {
+        }
+
+        protected override void Setup()
+        {
             // We use mapper to do one-to-one mapping for demo.
             // Do use object assignments and set Moq expectations to override their default values.
             var mapper = new Mapper(new MapperConfiguration(m =>

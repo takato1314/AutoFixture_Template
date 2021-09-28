@@ -1,4 +1,5 @@
-﻿using EnsureThat;
+﻿// ReSharper disable VirtualMemberCallInConstructor
+using EnsureThat;
 using Moq;
 
 namespace AutoFixture.Extensions
@@ -13,9 +14,9 @@ namespace AutoFixture.Extensions
             IFixture fixture)
         {
             Fixture = fixture;
-
             Object = CreateObject();
             Mock = Moq.Mock.Get(Object);
+            Setup();
         }
 
         /// <inheritdoc cref="BaseFixtureSetup{TFixture}"/>
@@ -25,6 +26,7 @@ namespace AutoFixture.Extensions
         {
             Fixture = fixture;
             Inject(item);
+            Setup();
         }
 
         #region Properties
@@ -54,7 +56,6 @@ namespace AutoFixture.Extensions
 
             Object = item;
             Mock = item.IsMockType() ? Moq.Mock.Get(item) : null;
-
             Fixture.Inject(item);
         }
 
@@ -66,6 +67,13 @@ namespace AutoFixture.Extensions
         private T CreateObject()
         {
             return Fixture.Freeze<T>();
+        }
+
+        /// <summary>
+        /// Setup expected values for <see cref="Mock"/> or <see cref="Object"/>
+        /// </summary>
+        protected virtual void Setup()
+        {
         }
 
         #endregion
