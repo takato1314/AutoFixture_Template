@@ -3,14 +3,14 @@
     /// <summary>
     /// Represents the run-time behavior of <see cref="IFixtureSetup{T}"/> operations
     /// </summary>
-    public class SelfReferenceAssignmentOptions<TSelf> : IAssignmentOptions 
-        where TSelf : SelfReferenceAssignmentOptions<TSelf>
+    public abstract class SelfRefFixtureSetupOptions<TSelf> : IFixtureSetupOptions 
+        where TSelf : SelfRefFixtureSetupOptions<TSelf>
     {
-        internal SelfReferenceAssignmentOptions()
+        protected SelfRefFixtureSetupOptions()
         {
         }
 
-        protected SelfReferenceAssignmentOptions(IAssignmentOptions defaults)
+        protected SelfRefFixtureSetupOptions(IFixtureSetupOptions defaults)
         {
             Instance = defaults.Instance;
         }

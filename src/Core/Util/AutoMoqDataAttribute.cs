@@ -22,8 +22,8 @@ namespace AutoFixture.Extensions
 
         #region Properties
 
-        private static bool _fluentOptionsSet = false;
-        private static readonly object FixtureLock = new object();
+        private static bool _fluentOptionsSet;
+        private static readonly object FixtureLock = new();
 
         #endregion
 

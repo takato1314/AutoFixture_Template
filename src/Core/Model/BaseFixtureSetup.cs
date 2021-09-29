@@ -18,19 +18,8 @@ namespace AutoFixture.Extensions
 
             // Post-construction
             // See https://stackoverflow.com/a/46140327
+            // ReSharper disable once VirtualMemberCallInConstructor
             Setup();
-        }
-
-        /// <inheritdoc cref="BaseFixtureSetup{TFixture}"/>
-        protected BaseFixtureSetup(IFixture fixture, Func<AssignmentOptions<T>, AssignmentOptions<T>> config)
-        {
-            Fixture = fixture;
-            Object = CreateObject();
-            Mock = Moq.Mock.Get(Object);
-
-            // Post-construction
-            // See https://stackoverflow.com/a/46140327
-            var test = config(AssignmentOptions<T>.CloneDefaults(Object));
         }
 
         /// <inheritdoc cref="BaseFixtureSetup{TFixture}"/>
@@ -41,7 +30,21 @@ namespace AutoFixture.Extensions
             Fixture = fixture;
             Inject(item);
         }
-        
+
+        /// <inheritdoc cref="BaseFixtureSetup{TFixture}"/>
+        protected BaseFixtureSetup(
+            IFixture fixture, 
+            Func<FixtureSetupOptions<T>, FixtureSetupOptions<T>> config)
+        {
+            Fixture = fixture;
+            Object = CreateObject();
+            Mock = Moq.Mock.Get(Object);
+
+            // Post-construction
+            // See https://stackoverflow.com/a/46140327
+            config(FixtureSetupOptions<T>.CloneDefaults(Object));
+        }
+
         #region Properties
 
         protected IFixture Fixture { get; }

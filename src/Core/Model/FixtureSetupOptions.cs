@@ -5,20 +5,16 @@ using System.Reflection;
 namespace AutoFixture.Extensions
 {
     /// <inheritdoc />
-    public class AssignmentOptions<T> : SelfReferenceAssignmentOptions<AssignmentOptions<T>>
+    public class FixtureSetupOptions<T> : SelfRefFixtureSetupOptions<FixtureSetupOptions<T>>
     {
-        public AssignmentOptions()
-        {
-        }
-
-        public AssignmentOptions(IAssignmentOptions defaults) : base(defaults)
+        public FixtureSetupOptions(IFixtureSetupOptions defaults) : base(defaults)
         {
         }
         
         /// <summary>
         /// Setup expression for assigning expectations into <see cref="IFixtureSetup{T}.Object"/>
         /// </summary>
-        public AssignmentOptions<T> Setup<TProperty>(Expression<Func<T, TProperty>> expression, TProperty value)
+        public FixtureSetupOptions<T> Setup<TProperty>(Expression<Func<T, TProperty>> expression, TProperty value)
         {
             AssignValue(expression, value);
             return this;
@@ -38,16 +34,17 @@ namespace AutoFixture.Extensions
             propertyInfo.SetValue(Instance, value, null);
         }
 
-        internal static AssignmentOptions<T> CloneDefaults(T instance)
+        internal static FixtureSetupOptions<T> CloneDefaults(T instance)
         {
-            return new(new AssignmentOptions(instance!));
+            // Create default options.
+            return new FixtureSetupOptions<T>(new FixtureSetupOptions(instance!));
         }
     }
 
     /// <inheritdoc />
-    public class AssignmentOptions : SelfReferenceAssignmentOptions<AssignmentOptions>
+    public class FixtureSetupOptions : SelfRefFixtureSetupOptions<FixtureSetupOptions>
     {
-        public AssignmentOptions(object instance)
+        public FixtureSetupOptions(object instance)
         {
             Instance = instance;
         }
