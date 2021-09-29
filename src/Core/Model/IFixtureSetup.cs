@@ -16,7 +16,8 @@
         public T Object { get; internal set; }
 
         /// <summary>
-        /// Setup expected values for Mock or <see cref="Object"/>
+        /// Setup expected values for Mock or Object.<br/>
+        /// <b>Note:</b> This method will always override any previous setups done via ctor when invoked.
         /// </summary>
         public void Setup();
     }

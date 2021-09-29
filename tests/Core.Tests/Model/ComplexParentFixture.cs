@@ -30,7 +30,7 @@ namespace AutoFixture.Extensions.Tests
         public override void Setup()
         {
             // Use mock setup for getter only properties.
-            Mock!.Setup(m => m.ComplexChild).Returns(new ComplexChildFixture(Fixture).Object);
+            Mock!.Setup(m => m.ComplexChild).Returns(new ComplexChildFixture(Fixture) { MyNumber = 5566 }.Object);
             Mock.Setup(m => m.StructChild).Returns(new StructChild("testHost", 80));
         }
     }
@@ -82,8 +82,8 @@ namespace AutoFixture.Extensions.Tests
             // because we override with our own fixture
             var instances = new List<ComplexParent>
             {
-                sut.Object, 
-                fixture.Create<ComplexParent>(), 
+                sut.Object,
+                fixture.Create<ComplexParent>(),
                 new ComplexParentFixture(fixture).Object
             };
 
@@ -102,7 +102,8 @@ namespace AutoFixture.Extensions.Tests
                 instance.ComplexChild.Should().NotBeNull();
                 instance.ComplexChild.IsMockType().Should().BeTrue();
                 instance.ComplexChild.Should().BeSameAs(complexChild); // Same instance for created fixture
-                instance.ComplexChild.Should().BeEquivalentTo(ComplexChildFixture.Instance); // Similar to the setup object. 
+                instance.ComplexChild.Should()
+                    .BeEquivalentTo(ComplexChildFixture.Instance); // Similar to the setup object. 
 
                 // SimpleChild is injected
                 instance.SimpleChild.Should().NotBeNull();
@@ -151,7 +152,8 @@ namespace AutoFixture.Extensions.Tests
                 instance.ComplexChild.Should().NotBeNull();
                 instance.ComplexChild.IsMockType().Should().BeTrue();
                 instance.ComplexChild.Should().BeSameAs(complexChild); // Same instance for created fixture
-                instance.ComplexChild.Should().BeEquivalentTo(ComplexChildFixture.Instance); // Equivalent to the setup object. 
+                instance.ComplexChild.Should()
+                    .BeEquivalentTo(ComplexChildFixture.Instance); // Equivalent to the setup object. 
 
                 // SimpleChild is injected
                 instance.SimpleChild.Should().NotBeNull();
@@ -211,7 +213,7 @@ namespace AutoFixture.Extensions.Tests
         {
             // Arrange
             var complexChild = new ComplexChildFixture(fixture).Object;
-            
+
             // Act
             var sut = new ComplexParentFixture(fixture, options => options
                 //.Setup(_ => _.ComplexChild, complexChild)

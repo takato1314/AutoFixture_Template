@@ -29,18 +29,32 @@ namespace AutoFixture.Extensions.Tests
         {
         }
 
+        #region Properties
+
+        /// <summary>
+        /// Additional properties are introduced to allow direct configurations on Mock/Object values for different test cases. <br/>
+        /// <b>E.g.</b> Fixture for HttpRequest may have same 'User' and 'Host' values, but may need to return different 'Content' and 'StatusCode'
+        /// on different use cases.
+        /// </summary>
+        public int MyNumber { get; set; }
+
+        #endregion
+
         public sealed override void Setup()
         {
             // We use mapper to do one-to-one mapping for unit testing.
             // Do use object assignments and set Moq expectations to override their default values.
             var mapper = new Mapper(new MapperConfiguration(m => { m.CreateMap<ComplexChild, ComplexChild>(); }));
             mapper.Map(Instance, Object);
+
+            // Instead use assignments or mock setups as follows
+            Object.Number = MyNumber;
         }
 
         #region Properties
 
+        // For unit test comparisons
         internal static readonly SimpleChild SimpleChild = new(nameof(Tests.SimpleChild), 100);
-
         internal static readonly ComplexChild Instance = new()
         {
             Name = "FixtureSetup",
@@ -68,7 +82,10 @@ namespace AutoFixture.Extensions.Tests
         public Task FixtureSetup_TestEquivalency(IFixture fixture)
         {
             // Arrange
-            var sut = new ComplexChildFixture(fixture);
+            var sut = new ComplexChildFixture(fixture)
+            {
+                MyNumber = 5566
+            };
 
             // Act
             var i0 = new ComplexChild();
@@ -99,7 +116,10 @@ namespace AutoFixture.Extensions.Tests
         {
             // Arrange
             // Act
-            var sut = new ComplexChildFixture(fixture);
+            var sut = new ComplexChildFixture(fixture)
+            {
+                MyNumber = 5566
+            };
 
             // Assert
             var instances = new List<ComplexChild>{ sut.Object, fixture.Create<ComplexChild>() };
@@ -176,6 +196,7 @@ namespace AutoFixture.Extensions.Tests
                 .Setup(_ => _.ConcurrencyStamp, new Guid("6f55a677-c447-45f0-8e71-95c7b73fa889"))
                 .Setup(_ => _.Boolean, true)
                 .Setup(_ => _.Function, _ => "default")
+                //.Setup(_ => _.GetValue(), "No longer throws exception")
             );
 
             // Assert

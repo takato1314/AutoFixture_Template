@@ -20,6 +20,8 @@ namespace AutoFixture.Extensions
             return this;
         }
 
+        #region Private
+
         /// <summary>
         /// Assign the expected value to the <see cref="IFixtureSetup{T}.Object"/>.
         /// See https://stackoverflow.com/q/5780232.
@@ -39,6 +41,8 @@ namespace AutoFixture.Extensions
             // Create default options.
             return new FixtureSetupOptions<T>(new FixtureSetupOptions(instance!));
         }
+
+        #endregion
     }
 
     /// <inheritdoc />

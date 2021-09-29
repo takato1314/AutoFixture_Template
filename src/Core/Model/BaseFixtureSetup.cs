@@ -15,11 +15,8 @@ namespace AutoFixture.Extensions
             Fixture = fixture;
             Object = CreateObject();
             Mock = Moq.Mock.Get(Object);
-
-            // Post-construction
-            // See https://stackoverflow.com/a/46140327
-            // ReSharper disable once VirtualMemberCallInConstructor
-            Setup();
+            
+            _shouldRunSetup = true;
         }
 
         /// <inheritdoc cref="BaseFixtureSetup{TFixture}"/>
@@ -29,6 +26,8 @@ namespace AutoFixture.Extensions
         {
             Fixture = fixture;
             Inject(item);
+
+            _shouldRunSetup = false;
         }
 
         /// <inheritdoc cref="BaseFixtureSetup{TFixture}"/>
@@ -39,18 +38,34 @@ namespace AutoFixture.Extensions
             Fixture = fixture;
             Object = CreateObject();
             Mock = Moq.Mock.Get(Object);
-
-            // Post-construction
-            // See https://stackoverflow.com/a/46140327
+            
             config(FixtureSetupOptions<T>.CloneDefaults(Object));
+            _shouldRunSetup = false;
         }
 
         #region Properties
 
+        private bool _shouldRunSetup;
+        private T _object = null!;
+
         protected IFixture Fixture { get; }
 
         /// <inheritdoc cref="IFixtureSetup{T}.Object" />
-        public T Object { get; protected set; } = null!;
+        public T Object {
+            get
+            {
+                // Post-construction
+                // See https://stackoverflow.com/a/46140327
+                if (_shouldRunSetup)
+                {
+                    _shouldRunSetup = false;
+                    Setup();
+                }
+                
+                return _object;
+            }
+            set => _object = value;
+        }
 
         T IFixtureSetup<T>.Object
         {
@@ -71,7 +86,7 @@ namespace AutoFixture.Extensions
         }
 
         #region Private
-
+        
         /// <summary>
         /// Inject an instance of <typeparam name="T">object</typeparam> into the current fixture and overrides the <see cref="Object"/> instance. <br/>
         /// Also see <see cref="FixtureRegistrar.Inject{T}"/>.
