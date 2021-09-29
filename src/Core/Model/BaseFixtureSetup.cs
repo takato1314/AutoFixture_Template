@@ -1,4 +1,5 @@
-﻿using EnsureThat;
+﻿using System;
+using EnsureThat;
 using Moq;
 
 namespace AutoFixture.Extensions
@@ -14,7 +15,22 @@ namespace AutoFixture.Extensions
             Fixture = fixture;
             Object = CreateObject();
             Mock = Moq.Mock.Get(Object);
+
+            // Post-construction
+            // See https://stackoverflow.com/a/46140327
             Setup();
+        }
+
+        /// <inheritdoc cref="BaseFixtureSetup{TFixture}"/>
+        protected BaseFixtureSetup(IFixture fixture, Func<AssignmentOptions<T>, AssignmentOptions<T>> config)
+        {
+            Fixture = fixture;
+            Object = CreateObject();
+            Mock = Moq.Mock.Get(Object);
+
+            // Post-construction
+            // See https://stackoverflow.com/a/46140327
+            var test = config(AssignmentOptions<T>.CloneDefaults(Object));
         }
 
         /// <inheritdoc cref="BaseFixtureSetup{TFixture}"/>
@@ -25,14 +41,7 @@ namespace AutoFixture.Extensions
             Fixture = fixture;
             Inject(item);
         }
-
-        // Factory Method Pattern
-        // See https://stackoverflow.com/a/6792917
-        //public static IFixtureSetup<T> Construct()
-        //{
-        //    var fixture = 
-        //}
-
+        
         #region Properties
 
         protected IFixture Fixture { get; }
@@ -52,16 +61,6 @@ namespace AutoFixture.Extensions
         public Mock<T>? Mock { get; private set; }
 
         #endregion
-
-        /// <inheritdoc />
-        public void Inject(T item)
-        {
-            Ensure.Any.IsNotNull(item);
-
-            Object = item;
-            Mock = item.IsMockType() ? Moq.Mock.Get(item) : null;
-            Fixture.Inject(item);
-        }
         
         /// <inheritdoc />
         public virtual void Setup()
@@ -69,6 +68,19 @@ namespace AutoFixture.Extensions
         }
 
         #region Private
+
+        /// <summary>
+        /// Inject an instance of <typeparam name="T">object</typeparam> into the current fixture and overrides the <see cref="Object"/> instance. <br/>
+        /// Also see <see cref="FixtureRegistrar.Inject{T}"/>.
+        /// </summary>
+        private void Inject(T item)
+        {
+            Ensure.Any.IsNotNull(item);
+
+            Object = item;
+            Mock = item.IsMockType() ? Moq.Mock.Get(item) : null;
+            Fixture.Inject(item);
+        }
 
         /// <summary>
         /// Initialize a fixture instance for the <see cref="Object"/>.

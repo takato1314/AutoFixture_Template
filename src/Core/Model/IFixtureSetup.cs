@@ -16,12 +16,6 @@
         public T Object { get; internal set; }
 
         /// <summary>
-        /// Inject an instance of <typeparam name="T">object</typeparam> into the current fixture and overrides the <see cref="Object"/> instance. <br/>
-        /// Also see <see cref="FixtureRegistrar.Inject{T}"/>.
-        /// </summary>
-        public void Inject(T item);
-
-        /// <summary>
         /// Setup expected values for Mock or <see cref="Object"/>
         /// </summary>
         public void Setup();

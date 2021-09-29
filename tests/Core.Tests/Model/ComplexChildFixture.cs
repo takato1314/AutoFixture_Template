@@ -22,25 +22,22 @@ namespace AutoFixture.Extensions.Tests
         {
         }
 
-        public override void Setup()
+        /// <inheritdoc />
+        public ComplexChildFixture(
+            IFixture fixture,
+            Func<AssignmentOptions<ComplexChild>, AssignmentOptions<ComplexChild>> config) : base(fixture, config)
+        {
+        }
+
+        public sealed override void Setup()
         {
             // We use mapper to do one-to-one mapping for unit testing.
             // Do use object assignments and set Moq expectations to override their default values.
-            var mapper = new Mapper(new MapperConfiguration(m =>
-            {
-                m.CreateMap<ComplexChild, ComplexChild>();
-            }));
+            var mapper = new Mapper(new MapperConfiguration(m => { m.CreateMap<ComplexChild, ComplexChild>(); }));
             mapper.Map(Instance, Object);
-
-            // Use assignments or mock setups as follows
-            Object.Number = Number;
         }
 
         #region Properties
-
-        // Additional properties are introduced to allow direct configurations on Mock/Object values for different test cases.
-        // Eg. Fixture for HttpRequest may have same 'User' and 'Host' values, but may need to return different 'Content' and 'StatusCode'.
-        public int Number { get; set; } = 5566;
 
         internal static readonly SimpleChild SimpleChild = new(nameof(Tests.SimpleChild), 100);
 
@@ -58,18 +55,17 @@ namespace AutoFixture.Extensions.Tests
             },
             DictionaryCollection = new Dictionary<string, SimpleChild>
             {
-                {nameof(Tests.SimpleChild), SimpleChild}
+                { nameof(Tests.SimpleChild), SimpleChild }
             }
         };
 
         #endregion
     }
 
-
     public class ComplexChildFixtureTest
     {
         [Theory, AutoMoqData]
-        public Task CreateFixtures_TestEquivalency(IFixture fixture)
+        public Task FixtureSetup_TestEquivalency(IFixture fixture)
         {
             // Arrange
             var sut = new ComplexChildFixture(fixture);
@@ -97,131 +93,43 @@ namespace AutoFixture.Extensions.Tests
 
             return Task.CompletedTask;
         }
-        
+
         [Theory, AutoMoqData]
-        public Task GetObject_ShouldReturnSameObjects(IFixture fixture)
+        public Task FixtureSetup_Default_ShouldReturnDefaultSetupValues(IFixture fixture)
         {
             // Arrange
+            // Act
             var sut = new ComplexChildFixture(fixture);
 
-            // Act
-            var i1 = sut.Object;
-
             // Assert
-            i1.Should().NotBeNull();
-            i1.IsMockType().Should().BeTrue();
-            i1.Name.Should().NotBeNullOrEmpty();
-            i1.Number.Should().Be(5566);
-            i1.ConcurrencyStamp.Should().NotBe(default(Guid));
-            i1.Nullable.Should().NotBeNull();
-            i1.Boolean.Should().BeFalse();
-            i1.StringCollection.Should().NotBeNullOrEmpty();
-            i1.StringCollection.All(_ => !_.IsNullOrEmpty()).Should().BeTrue();
-            i1.DictionaryCollection.Should().NotBeNullOrEmpty();
-            i1.DictionaryCollection.Should().HaveCount(1);
-            i1.DictionaryCollection[nameof(SimpleChild)].Should().Be(ComplexChildFixture.SimpleChild);
-
-            // All instances should be same as fixture
-            var instances = fixture.CreateMany<ComplexChild>();
+            var instances = new List<ComplexChild>{ sut.Object, fixture.Create<ComplexChild>() };
             foreach (var instance in instances)
             {
                 instance.Should().NotBeNull();
-                instance.Should().BeSameAs(i1);
+                instance.IsMockType().Should().BeTrue();
+                instance.Should().BeEquivalentTo(ComplexChildFixture.Instance);
+                instance.Name.Should().NotBeNullOrEmpty();
+                instance.Number.Should().Be(5566);
+                instance.ConcurrencyStamp.Should().NotBe(default(Guid));
+                instance.Nullable.Should().NotBeNull();
+                instance.Boolean.Should().BeFalse();
+                instance.StringCollection.Should().NotBeNullOrEmpty();
+                instance.StringCollection.All(_ => !_.IsNullOrEmpty()).Should().BeTrue();
+                instance.DictionaryCollection.Should().NotBeNullOrEmpty();
+                instance.DictionaryCollection.Should().HaveCount(1);
+                instance.DictionaryCollection[nameof(SimpleChild)].Should().Be(ComplexChildFixture.SimpleChild);
+                instance.Function(string.Empty).Should().Be("FixtureSetupFunction");
                 instance.Invoking(_ => _.GetValue())
                     .Should()
                     .Throw<NotImplementedException>()
                     .WithMessage("Not implemented on class");
             }
-            
-            return Task.CompletedTask;
-        }
-
-        [Theory, AutoMoqData]
-        public Task TestInject_Ext_ShouldReturnInjectedObject(IFixture fixture)
-        {
-            // Arrange
-            var injected = new Mock<ComplexChild>();
-            injected.SetupProperty(_ => _.Name, "OverridenText");
-            injected.SetupProperty(_ => _.Number, 111);
-            injected.SetupProperty(_ => _.ConcurrencyStamp, new Guid("6f55a677-c447-45f0-8e71-95c7b73fa889"));
-            injected.SetupProperty(_ => _.Boolean, true);
-            injected.SetupProperty(_ => _.Function, _ => "default");
-            injected.Setup(_ => _.GetValue()).Returns("No longer throws exception");
-            var sut = new ComplexChildFixture(fixture);
-            var oldObject = sut.Object;
-
-            // Act
-            sut.Inject(injected.Object);
-
-            // Assert
-            oldObject.Should().NotBeNull();
-            oldObject.Invoking(_ => _.GetValue())
-                .Should()
-                .Throw<NotImplementedException>()
-                .WithMessage("Not implemented on class");
-
-            var instances = new List<ComplexChild> { sut.Object, fixture.Create<ComplexChild>() };
-            foreach (var instance in instances)
-            {
-                instance.Should().NotBeNull();
-                instance.IsMockType().Should().BeTrue();
-                instance.Should().NotBeEquivalentTo(oldObject);
-                instance.Should().BeSameAs(injected.Object);
-                instance.Name.Should().Be("OverridenText");
-                instance.Number.Should().Be(111);
-                instance.ConcurrencyStamp.ToString().Should().Be("6f55a677-c447-45f0-8e71-95c7b73fa889");
-                instance.Boolean.Should().BeTrue();
-                instance.Function(string.Empty).Should().Be("default");
-                instance.GetValue().Should().Be("No longer throws exception");
-            }
 
             return Task.CompletedTask;
         }
 
         [Theory, AutoMoqData]
-        public Task TestInject_FixtureInject_ShouldReturnInjectedObject(IFixture fixture)
-        {
-            // Arrange
-            var injected = new Mock<ComplexChild>();
-            injected.SetupProperty(_ => _.Name, "OverridenText");
-            injected.SetupProperty(_ => _.Number, 111);
-            injected.SetupProperty(_ => _.ConcurrencyStamp, new Guid("6f55a677-c447-45f0-8e71-95c7b73fa889"));
-            injected.SetupProperty(_ => _.Boolean, true);
-            injected.SetupProperty(_ => _.Function, _ => "default");
-            injected.Setup(_ => _.GetValue()).Returns("No longer throws exception");
-            var sut = new ComplexChildFixture(fixture);
-            var oldObject = sut.Object;
-
-            // Act
-            fixture.Inject(sut, injected.Object);
-
-            // Assert
-            oldObject.Should().NotBeNull();
-            oldObject.Invoking(_ => _.GetValue())
-                .Should()
-                .Throw<NotImplementedException>()
-                .WithMessage("Not implemented on class");
-
-            var instances = new List<ComplexChild> { sut.Object, fixture.Create<ComplexChild>() };
-            foreach (var instance in instances)
-            {
-                instance.Should().NotBeNull();
-                instance.IsMockType().Should().BeTrue();
-                instance.Should().NotBeEquivalentTo(oldObject);
-                instance.Should().BeSameAs(injected.Object);
-                instance.Name.Should().Be("OverridenText");
-                instance.Number.Should().Be(111);
-                instance.ConcurrencyStamp.ToString().Should().Be("6f55a677-c447-45f0-8e71-95c7b73fa889");
-                instance.Boolean.Should().BeTrue();
-                instance.Function(string.Empty).Should().Be("default");
-                instance.GetValue().Should().Be("No longer throws exception");
-            }
-
-            return Task.CompletedTask;
-        }
-
-        [Theory, AutoMoqData]
-        public Task TestInject_Ctor_ShouldReturnInjectedObject(IFixture fixture)
+        public Task FixtureSetup_InjectItem_ShouldReturnInjectedObject(IFixture fixture)
         {
             // Arrange
             var injected = new Mock<ComplexChild>();
@@ -241,11 +149,15 @@ namespace AutoFixture.Extensions.Tests
             {
                 instance.Should().NotBeNull();
                 instance.IsMockType().Should().BeTrue();
+                instance.Should().NotBeEquivalentTo(ComplexChildFixture.Instance);
                 instance.Should().BeSameAs(injected.Object);
                 instance.Name.Should().Be("OverridenText");
                 instance.Number.Should().Be(111);
                 instance.ConcurrencyStamp.ToString().Should().Be("6f55a677-c447-45f0-8e71-95c7b73fa889");
+                instance.Nullable.Should().BeNull(); // not being setup
                 instance.Boolean.Should().BeTrue();
+                instance.StringCollection.Should().BeNull(); // not being setup
+                instance.DictionaryCollection.Should().BeNull(); // not being setup
                 instance.Function(string.Empty).Should().Be("default");
                 instance.GetValue().Should().Be("No longer throws exception");
             }
@@ -253,5 +165,39 @@ namespace AutoFixture.Extensions.Tests
             return Task.CompletedTask;
         }
 
+        [Theory, AutoMoqData]
+        public Task FixtureSetup_InjectOptions_ShouldReturnInjectedValues(IFixture fixture)
+        {
+            // Arrange
+            // Act
+            var sut = new ComplexChildFixture(fixture, options => options
+                .Setup(_ => _.Name, "OverridenText")
+                .Setup(_ => _.Number, 111)
+                .Setup(_ => _.ConcurrencyStamp, new Guid("6f55a677-c447-45f0-8e71-95c7b73fa889"))
+                .Setup(_ => _.Boolean, true)
+                .Setup(_ => _.Function, _ => "default")
+            );
+
+            // Assert
+            var instances = new List<ComplexChild> { sut.Object, fixture.Create<ComplexChild>() };
+            foreach (var instance in instances)
+            {
+                instance.Should().NotBeNull();
+                instance.IsMockType().Should().BeTrue();
+                instance.Should().NotBeEquivalentTo(ComplexChildFixture.Instance);
+                instance.Name.Should().Be("OverridenText");
+                instance.Number.Should().Be(111);
+                instance.ConcurrencyStamp.ToString().Should().Be("6f55a677-c447-45f0-8e71-95c7b73fa889");
+                instance.Nullable.Should().NotBeNull();
+                instance.Boolean.Should().BeTrue();
+                instance.StringCollection.Should().NotBeNullOrEmpty();
+                instance.StringCollection.All(_ => !_.IsNullOrEmpty()).Should().BeTrue();
+                instance.DictionaryCollection.Should().NotBeNullOrEmpty();
+                instance.Function(string.Empty).Should().Be("default");
+                //instance.GetValue().Should().Be("No longer throws exception");
+            }
+
+            return Task.CompletedTask;
+        }
     }
 }

@@ -455,8 +455,8 @@ namespace AutoFixture.Extensions.Tests
         [Theory, AutoMoqData]
         public void Inject_WithNull_ShouldThrowNullArgumentException(IFixture fixture)
         {
-            var sut = new ComplexChildFixture(fixture);
-            sut.Invoking(_ => _.Inject(null!)).Should().Throw<ArgumentNullException>();
+            Func<IFixtureSetup<ComplexChild>> init = () => new ComplexChildFixture(fixture, item: null!);
+            init.Should().Throw<ArgumentNullException>();
         }
 
         [Theory, AutoMoqData]
