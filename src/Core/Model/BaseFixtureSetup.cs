@@ -33,13 +33,13 @@ namespace AutoFixture.Extensions
         /// <inheritdoc cref="BaseFixtureSetup{TFixture}"/>
         protected BaseFixtureSetup(
             IFixture fixture, 
-            Func<FixtureSetupOptions<T>, FixtureSetupOptions<T>> config)
+            Func<FixtureSetupOptions<T,T>, FixtureSetupOptions<T,T>> config)
         {
             Fixture = fixture;
             Object = CreateObject();
             Mock = Moq.Mock.Get(Object);
             
-            config(FixtureSetupOptions<T>.CloneDefaults(Object));
+            config(FixtureSetupOptions<T,T>.CloneDefaults(Object));
             _shouldRunSetup = false;
         }
 

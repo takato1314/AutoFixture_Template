@@ -25,7 +25,7 @@ namespace AutoFixture.Extensions.Tests
         /// <inheritdoc />
         public ComplexChildFixture(
             IFixture fixture,
-            Func<FixtureSetupOptions<ComplexChild>, FixtureSetupOptions<ComplexChild>> config) : base(fixture, config)
+            Func<FixtureSetupOptions<ComplexChild, ComplexChild>, FixtureSetupOptions<ComplexChild, ComplexChild>> config) : base(fixture, config)
         {
         }
 
@@ -139,7 +139,11 @@ namespace AutoFixture.Extensions.Tests
                 instance.DictionaryCollection.Should().HaveCount(1);
                 instance.DictionaryCollection[nameof(SimpleChild)].Should().Be(ComplexChildFixture.SimpleChild);
                 instance.Function(string.Empty).Should().Be("FixtureSetupFunction");
-                instance.Invoking(_ => _.GetValue())
+                instance.Invoking(_ => _.ReturnMethod())
+                    .Should()
+                    .Throw<NotImplementedException>()
+                    .WithMessage("Not implemented on class");
+                instance.Invoking(_ => _.VoidMethod())
                     .Should()
                     .Throw<NotImplementedException>()
                     .WithMessage("Not implemented on class");
@@ -152,13 +156,15 @@ namespace AutoFixture.Extensions.Tests
         public Task FixtureSetup_InjectItem_ShouldReturnInjectedObject(IFixture fixture)
         {
             // Arrange
+            var hasCalledVoidMethod = false;
             var injected = new Mock<ComplexChild>();
             injected.SetupProperty(_ => _.Name, "OverridenText");
             injected.SetupProperty(_ => _.Number, 111);
             injected.SetupProperty(_ => _.ConcurrencyStamp, new Guid("6f55a677-c447-45f0-8e71-95c7b73fa889"));
             injected.SetupProperty(_ => _.Boolean, true);
             injected.SetupProperty(_ => _.Function, _ => "default");
-            injected.Setup(_ => _.GetValue()).Returns("No longer throws exception");
+            injected.Setup(_ => _.ReturnMethod()).Returns("No longer throws exception");
+            injected.Setup(_ => _.VoidMethod()).Callback(() => { hasCalledVoidMethod = true; });
 
             // Act
             var sut = new ComplexChildFixture(fixture, injected.Object);
@@ -179,7 +185,12 @@ namespace AutoFixture.Extensions.Tests
                 instance.StringCollection.Should().BeNull(); // not being setup
                 instance.DictionaryCollection.Should().BeNull(); // not being setup
                 instance.Function(string.Empty).Should().Be("default");
-                instance.GetValue().Should().Be("No longer throws exception");
+                instance.ReturnMethod().Should().Be("No longer throws exception");
+
+                // Ensure void method is called and reset the callback value for next iteration.
+                instance.Invoking(_ => _.VoidMethod()).Should().NotThrow();
+                hasCalledVoidMethod.Should().BeTrue();
+                hasCalledVoidMethod = false;
             }
 
             return Task.CompletedTask;
@@ -189,6 +200,8 @@ namespace AutoFixture.Extensions.Tests
         public Task FixtureSetup_InjectOptions_ShouldReturnInjectedValues(IFixture fixture)
         {
             // Arrange
+            var hasCalledVoidMethod = false;
+
             // Act
             var sut = new ComplexChildFixture(fixture, options => options
                 .Setup(_ => _.Name, "OverridenText")
@@ -196,7 +209,8 @@ namespace AutoFixture.Extensions.Tests
                 .Setup(_ => _.ConcurrencyStamp, new Guid("6f55a677-c447-45f0-8e71-95c7b73fa889"))
                 .Setup(_ => _.Boolean, true)
                 .Setup(_ => _.Function, _ => "default")
-                //.Setup(_ => _.GetValue(), "No longer throws exception")
+                .Setup(_ => _.ReturnMethod(), "No longer throws exception")
+                .Setup(_ => _.VoidMethod(), () => { hasCalledVoidMethod = true; })
             );
 
             // Assert
@@ -215,7 +229,12 @@ namespace AutoFixture.Extensions.Tests
                 instance.StringCollection.All(_ => !_.IsNullOrEmpty()).Should().BeTrue();
                 instance.DictionaryCollection.Should().NotBeNullOrEmpty();
                 instance.Function(string.Empty).Should().Be("default");
-                //instance.GetValue().Should().Be("No longer throws exception");
+                instance.ReturnMethod().Should().Be("No longer throws exception");
+
+                // Ensure void method is called and reset the callback value for next iteration.
+                instance.Invoking(_ => _.VoidMethod()).Should().NotThrow();
+                hasCalledVoidMethod.Should().BeTrue();
+                hasCalledVoidMethod = false;
             }
 
             return Task.CompletedTask;

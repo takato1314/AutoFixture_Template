@@ -1,24 +1,30 @@
-﻿namespace AutoFixture.Extensions
+﻿using Moq;
+
+namespace AutoFixture.Extensions
 {
     /// <summary>
     /// Represents the run-time behavior of <see cref="IFixtureSetup{T}"/> operations
     /// </summary>
-    public abstract class SelfRefFixtureSetupOptions<TSelf> : IFixtureSetupOptions 
-        where TSelf : SelfRefFixtureSetupOptions<TSelf>
+    public abstract class SelfRefFixtureSetupOptions<TSelf, T> : IFixtureSetupOptions<T>
+        where TSelf : SelfRefFixtureSetupOptions<TSelf, T>
+        where T: class
     {
         protected SelfRefFixtureSetupOptions()
         {
         }
 
-        protected SelfRefFixtureSetupOptions(IFixtureSetupOptions defaults)
+        protected SelfRefFixtureSetupOptions(IFixtureSetupOptions<T> defaults)
         {
-            Instance = defaults.Instance;
+            Object = defaults.Object;
+            Mock = Object.IsMockType() ? Moq.Mock.Get(Object) : null;
         }
 
         #region Properties
 
         /// <inheritdoc />
-        public object Instance { get; set; } = null!;
+        public T Object { get; set; } = null!;
+
+        public Mock<T>? Mock { get; set; }
 
         #endregion
     }

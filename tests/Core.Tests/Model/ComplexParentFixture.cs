@@ -23,7 +23,7 @@ namespace AutoFixture.Extensions.Tests
         /// <inheritdoc />
         public ComplexParentFixture(
             IFixture fixture,
-            Func<FixtureSetupOptions<ComplexParent>, FixtureSetupOptions<ComplexParent>> config) : base(fixture, config)
+            Func<FixtureSetupOptions<ComplexParent, ComplexParent>, FixtureSetupOptions<ComplexParent, ComplexParent>> config) : base(fixture, config)
         {
         }
 
@@ -216,7 +216,7 @@ namespace AutoFixture.Extensions.Tests
 
             // Act
             var sut = new ComplexParentFixture(fixture, options => options
-                //.Setup(_ => _.ComplexChild, complexChild)
+                .Setup(_ => _.ComplexChild, complexChild)
                 .Setup(_ => _.Name, "OverridenText")
                 .Setup(_ => _.Number, 111)
                 .Setup(_ => _.ConcurrencyStamp, new Guid("6f55a677-c447-45f0-8e71-95c7b73fa889"))

@@ -22,7 +22,12 @@ namespace AutoFixture.Extensions.Tests
         /// </summary>
         Guid ConcurrencyStamp { get; set; }
 
-        public string GetValue()
+        public string ReturnMethod()
+        {
+            throw new NotImplementedException("Not implemented on interface");
+        }
+
+        public void VoidMethod()
         {
             throw new NotImplementedException("Not implemented on interface");
         }

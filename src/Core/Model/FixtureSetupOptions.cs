@@ -5,18 +5,28 @@ using System.Reflection;
 namespace AutoFixture.Extensions
 {
     /// <inheritdoc />
-    public class FixtureSetupOptions<T> : SelfRefFixtureSetupOptions<FixtureSetupOptions<T>>
+    public class FixtureSetupOptions<TSelf, T> : SelfRefFixtureSetupOptions<FixtureSetupOptions<TSelf, T>, T> 
+        where T : class
     {
-        public FixtureSetupOptions(IFixtureSetupOptions defaults) : base(defaults)
+        public FixtureSetupOptions(IFixtureSetupOptions<T> defaults) : base(defaults)
         {
         }
-        
+
         /// <summary>
-        /// Setup expression for assigning expectations into <see cref="IFixtureSetup{T}.Object"/>
+        /// Specifies a setup for a call to a <see langword="void"/> method.
         /// </summary>
-        public FixtureSetupOptions<T> Setup<TProperty>(Expression<Func<T, TProperty>> expression, TProperty value)
+        public FixtureSetupOptions<TSelf, T> Setup(Expression<Action<T>> expression, Action action)
         {
-            AssignValue(expression, value);
+            Mock!.Setup(expression).Callback(action);
+            return this;
+        }
+
+        /// <summary>
+        /// Specifies a setup on the mocked type for a call to a non-<see langword="void"/> (value-returning) method.
+        /// </summary>
+        public FixtureSetupOptions<TSelf, T> Setup<TResult>(Expression<Func<T, TResult>> expression, TResult value)
+        {
+            Mock!.Setup(expression).Returns(value);
             return this;
         }
 
@@ -29,28 +39,28 @@ namespace AutoFixture.Extensions
         /// <typeparam name="TProperty"></typeparam>
         /// <param name="expression"></param>
         /// <param name="value"></param>
-        private void AssignValue<TProperty>(Expression<Func<T, TProperty>> expression, TProperty value)
+        private void AssignSetterValue<TProperty>(Expression<Func<TSelf, TProperty>> expression, TProperty value)
         {
             var body = (MemberExpression)expression.Body;
             var propertyInfo = (PropertyInfo)body.Member;
-            propertyInfo.SetValue(Instance, value, null);
+            propertyInfo.SetValue(Object, value, null);
         }
 
-        internal static FixtureSetupOptions<T> CloneDefaults(T instance)
+        internal static FixtureSetupOptions<TSelf, T> CloneDefaults(T instance)
         {
             // Create default options.
-            return new FixtureSetupOptions<T>(new FixtureSetupOptions(instance!));
+            return new FixtureSetupOptions<TSelf, T>(new FixtureSetupOptions<T>(instance!));
         }
 
         #endregion
     }
 
     /// <inheritdoc />
-    public class FixtureSetupOptions : SelfRefFixtureSetupOptions<FixtureSetupOptions>
+    public class FixtureSetupOptions<T> : SelfRefFixtureSetupOptions<FixtureSetupOptions<T>, T> where T : class
     {
-        public FixtureSetupOptions(object instance)
+        public FixtureSetupOptions(T instance)
         {
-            Instance = instance;
+            Object = instance;
         }
     }
 }

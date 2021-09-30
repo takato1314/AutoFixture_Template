@@ -46,7 +46,12 @@ namespace AutoFixture.Extensions.Tests
 
         public Func<string, string> Function { get; set; } = s => s;
         
-        public string GetValue()
+        public string ReturnMethod()
+        {
+            throw new NotImplementedException("Not implemented on class");
+        }
+
+        public void VoidMethod()
         {
             throw new NotImplementedException("Not implemented on class");
         }

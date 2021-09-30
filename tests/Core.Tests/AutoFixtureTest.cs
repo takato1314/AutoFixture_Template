@@ -119,21 +119,32 @@ namespace AutoFixture.Extensions.Tests
             i1.Number.Should().NotBe(42);
 
             // All methods should call their base methods
-            i1.Invoking(_ => _.GetValue())
+            i1.Invoking(_ => _.ReturnMethod())
+                .Should()
+                .Throw<NotImplementedException>()
+                .WithMessage("Not implemented on interface");
+            i1.Invoking(_ => _.VoidMethod())
                 .Should()
                 .Throw<NotImplementedException>()
                 .WithMessage("Not implemented on interface");
 
             // Test override mock values
             var mock = Mock.Get(i1);
-            mock.Setup(_ => _.GetValue()).Returns("SomeValue");
+            var hasCalledVoidMethod = false;
+            mock.Setup(_ => _.ReturnMethod()).Returns("SomeValue");
+            mock.Setup(_ => _.VoidMethod()).Callback(() => { hasCalledVoidMethod = true; });
             i1.Name = "foo";
             i1.Number = 42;
 
             mock.Should().NotBeNull();
             i1.Name.Should().Be("foo");
             i1.Number.Should().Be(42);
-            i1.GetValue().Should().Be("SomeValue");
+            i1.ReturnMethod().Should().Be("SomeValue");
+            i1.Invoking(_ => _.VoidMethod()).Should().NotThrow();
+            hasCalledVoidMethod.Should().BeTrue();
+
+            mock.Verify(_ => _.ReturnMethod());
+            mock.Verify(_ => _.VoidMethod());
         }
 
         [Theory, AutoMoqData]
@@ -160,14 +171,20 @@ namespace AutoFixture.Extensions.Tests
             i1.Number.Should().NotBe(42);
 
             // All methods should call their base methods
-            i1.Invoking(_ => _.GetValue())
+            i1.Invoking(_ => _.ReturnMethod())
+                .Should()
+                .Throw<NotImplementedException>()
+                .WithMessage("Not implemented on class");
+            i1.Invoking(_ => _.VoidMethod())
                 .Should()
                 .Throw<NotImplementedException>()
                 .WithMessage("Not implemented on class");
 
             // Test override mock values
             var mock = Mock.Get(i1);
-            mock.Setup(_ => _.GetValue()).Returns("SomeValue");
+            var hasCalledVoidMethod = false;
+            mock.Setup(_ => _.ReturnMethod()).Returns("SomeValue");
+            mock.Setup(_ => _.VoidMethod()).Callback(() => { hasCalledVoidMethod = true; });
             i1.Name = "foo";
             i1.Number = 42;
             i1.StringCollection = new List<string>();
@@ -180,8 +197,13 @@ namespace AutoFixture.Extensions.Tests
             i1.Name.Should().Be("foo");
             i1.Number.Should().Be(42);
             i1.StringCollection.Should().BeEmpty();
-            i1.GetValue().Should().Be("SomeValue");
             i1.DictionaryCollection[nameof(SimpleChild)].Should().Be(simpleChild);
+            i1.ReturnMethod().Should().Be("SomeValue");
+            i1.Invoking(_ => _.VoidMethod()).Should().NotThrow();
+            hasCalledVoidMethod.Should().BeTrue();
+
+            mock.Verify(_ => _.ReturnMethod());
+            mock.Verify(_ => _.VoidMethod());
         }
 
         [Theory, AutoMoqData]
@@ -373,17 +395,24 @@ namespace AutoFixture.Extensions.Tests
             var i1 = fixture.Create<ComplexChild>();
             i1.Name.Should().Be(mockObj.Name);
             i1.Number.Should().Be(mockObj.Number);
-            i1.GetValue().Should().Be(mockObj.GetValue());
+            i1.ReturnMethod().Should().Be(mockObj.ReturnMethod());
 
             var mock = Mock.Get(i1);
+            var hasCalledVoidMethod = false;
             mock.SetupAllProperties();
-            mock.Setup(_ => _.GetValue()).Returns("SomeValue");
+            mock.Setup(_ => _.ReturnMethod()).Returns("SomeValue");
+            mock.Setup(_ => _.VoidMethod()).Callback(() => { hasCalledVoidMethod = true; });
             i1.Name = "foo";
             i1.Number = 42;
 
             i1.Name.Should().Be("foo");
             i1.Number.Should().Be(42);
-            i1.GetValue().Should().Be("SomeValue");
+            i1.ReturnMethod().Should().Be("SomeValue");
+            i1.Invoking(_ => _.VoidMethod()).Should().NotThrow();
+            hasCalledVoidMethod.Should().BeTrue();
+
+            mock.Verify(_ => _.ReturnMethod());
+            mock.Verify(_ => _.VoidMethod());
 
             var i2 = fixture.Freeze<ComplexChild>();
             i2.Should().BeSameAs(i1);
