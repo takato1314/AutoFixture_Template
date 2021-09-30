@@ -21,11 +21,24 @@ namespace AutoFixture.Extensions
 
         #region Properties
 
-        /// <inheritdoc />
-        public T Object { get; set; } = null!;
+        /// <inheritdoc cref="IFixtureSetupOptions{T}.Object" />
+        public T Object { get; internal set; } = null!;
 
-        public Mock<T>? Mock { get; set; }
+        /// <inheritdoc cref="IFixtureSetupOptions{T}.Mock" />
+        public Mock<T>? Mock { get; internal set; }
 
         #endregion
+
+        T IFixtureSetupOptions<T>.Object
+        {
+            get => Object;
+            set => Object = value;
+        }
+
+        Mock<T>? IFixtureSetupOptions<T>.Mock
+        {
+            get => Mock;
+            set => Mock = value;
+        }
     }
 }

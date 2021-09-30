@@ -23,7 +23,7 @@ namespace AutoFixture.Extensions.Tests
         /// <inheritdoc />
         public ComplexParentFixture(
             IFixture fixture,
-            Func<FixtureSetupOptions<ComplexParent, ComplexParent>, FixtureSetupOptions<ComplexParent, ComplexParent>> config) : base(fixture, config)
+            Func<FixtureSetupOptions<ComplexParent>, FixtureSetupOptions<ComplexParent>> config) : base(fixture, config)
         {
         }
 
@@ -134,12 +134,13 @@ namespace AutoFixture.Extensions.Tests
             {
                 sut,
                 fixture.Create<ComplexParent>(),
-                new ComplexParentFixture(fixture).Object
+                new ComplexParentFixture(fixture, options => options.Setup(_ => _.StructChild, structChild)).Object
             };
 
             // Assert
             simpleChild.Should().NotBeNull();
             complexChild.Should().NotBeNull();
+            structChild.Should().NotBeNull();
             foreach (var instance in instances)
             {
                 instance.Should().NotBeNull();
@@ -152,8 +153,6 @@ namespace AutoFixture.Extensions.Tests
                 instance.ComplexChild.Should().NotBeNull();
                 instance.ComplexChild.IsMockType().Should().BeTrue();
                 instance.ComplexChild.Should().BeSameAs(complexChild); // Same instance for created fixture
-                instance.ComplexChild.Should()
-                    .BeEquivalentTo(ComplexChildFixture.Instance); // Equivalent to the setup object. 
 
                 // SimpleChild is injected
                 instance.SimpleChild.Should().NotBeNull();
@@ -162,7 +161,7 @@ namespace AutoFixture.Extensions.Tests
 
                 // StructChild has its own setup in fixture
                 instance.StructChild.Should().NotBeNull();
-                instance.StructChild.Should().NotBeSameAs(structChild);
+                instance.StructChild.Should().BeEquivalentTo(structChild);
             }
 
             return Task.CompletedTask;

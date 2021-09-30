@@ -22,7 +22,7 @@ namespace AutoFixture.Extensions.Tests
         /// <inheritdoc />
         public SimpleChildFixture(
             IFixture fixture,
-            Func<FixtureSetupOptions<SimpleChild, SimpleChild>, FixtureSetupOptions<SimpleChild, SimpleChild>> config) : base(fixture, config)
+            Func<FixtureSetupOptions<SimpleChild>, FixtureSetupOptions<SimpleChild>> config) : base(fixture, config)
         {
         }
     }

@@ -3,18 +3,18 @@
 namespace AutoFixture.Extensions
 {
     /// <summary>
-    /// Provides the run-time details of the <see cref="FixtureSetupOptions{T}" /> class.
+    /// Provides the run-time details of the <see cref="IFixtureSetup{T}" />.
     /// </summary>
     public interface IFixtureSetupOptions<T> where T : class
     {
         /// <summary>
-        /// The current pointer to the <see cref="IFixtureSetup{T}.Object"/> instance.
+        /// Retrieves the current fixture's object
         /// </summary>
-        public T Object { get; set; }
+        public T Object { get; internal set; }
 
         /// <summary>
         /// The <see cref="Moq.Mock"/> for the <see cref="Object"/> object if it's available.
         /// </summary>
-        public Mock<T>? Mock { get; set; }
+        public Mock<T>? Mock { get; internal set; }
     }
 }
