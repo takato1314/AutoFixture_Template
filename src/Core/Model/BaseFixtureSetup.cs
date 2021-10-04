@@ -14,8 +14,8 @@ namespace AutoFixture.Extensions
         {
             Fixture = fixture;
             Object = CreateObject();
-            Mock = Moq.Mock.Get(Object);
-            
+            Mock = Object.IsMockType() ? Moq.Mock.Get(Object) : null;
+
             _shouldRunSetup = true;
         }
 
@@ -37,7 +37,7 @@ namespace AutoFixture.Extensions
         {
             Fixture = fixture;
             Object = CreateObject();
-            Mock = Moq.Mock.Get(Object);
+            Mock = Object.IsMockType() ? Moq.Mock.Get(Object) : null;
             
             config(FixtureSetupOptions<T>.CloneDefaults(Object));
             _shouldRunSetup = false;
@@ -97,7 +97,7 @@ namespace AutoFixture.Extensions
         /// Inject an instance of <typeparam name="T">object</typeparam> into the current fixture and overrides the <see cref="Object"/> instance. <br/>
         /// Also see <see cref="FixtureRegistrar.Inject{T}"/>.
         /// </summary>
-        private void Inject(T item)
+        protected void Inject(T item)
         {
             Ensure.Any.IsNotNull(item);
 
