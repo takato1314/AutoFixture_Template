@@ -54,7 +54,7 @@ namespace AutoFixture.Extensions
         internal static FixtureSetupOptions<T> CloneDefaults(T instance)
         {
             // Create default options.
-            return new FixtureSetupOptions<T>(new FixtureSetupOptions<T>(instance!));
+            return new FixtureSetupOptions<T>(new FixtureSetupOptions<T>(instance));
         }
 
         #endregion
