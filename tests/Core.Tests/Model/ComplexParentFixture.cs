@@ -23,7 +23,7 @@ namespace AutoFixture.Extensions.Tests
         /// <inheritdoc />
         public ComplexParentFixture(
             IFixture fixture,
-            Func<FixtureSetupOptions<ComplexParent>, FixtureSetupOptions<ComplexParent>> config) : base(fixture, config)
+            Func<FixtureSetupOptions<ComplexParent>, FixtureSetupOptions<ComplexParent>> options) : base(fixture, options)
         {
         }
 

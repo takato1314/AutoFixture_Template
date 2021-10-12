@@ -14,29 +14,40 @@ namespace AutoFixture.Extensions
     /// </summary>
     public static class FixtureFactory
     {
+        #region Properties
+
         /// <summary>
         /// Gets the IFixture instance
         /// </summary>
-        public static readonly IFixture Instance = CreateFixture();
+        public static IFixture Instance { get; private set; } = CreateFixture();
 
-        internal static IFixture GetFixture()
-        {
-            return Instance;
-        }
+        /// <inheritdoc cref="AutoMoqCustomization.ConfigureMembers"/>
+        public static bool GenerateMembers { get; set; } = true;
+
+        /// <inheritdoc cref="AutoMoqCustomization.GenerateDelegates"/>
+        public static bool GenerateDelegates { get; set; } = true;
+
+        #endregion
 
         /// <summary>
         /// Creates a customized <see cref="IFixture"/> instance for IFixture.
         /// </summary>
-        public static IFixture CreateFixture()
+        public static IFixture CreateFixture(
+            bool generateMembers = true,
+            bool generateDelegates = true)
         {
             // Setup mock for all types to use mocks
             bool ConcreteFilter(ISpecimenBuilder sb) => sb is not MethodInvoker;
             var defaultEngine = new FilteringRelays(ConcreteFilter);
 
             // Customizations
-            var fixture = new Fixture(defaultEngine).Customize(new CompositeCustomization(new AutoPopulatedMoqCustomization()));
-            var postprocessor = (Postprocessor)fixture.Customizations.Single(f => f is Postprocessor);
-            if (postprocessor.Command is CompositeSpecimenCommand command)
+            var fixture = new Fixture(defaultEngine).Customize(new CompositeCustomization(new AutoPopulatedMoqCustomization
+            {
+                ConfigureMembers = generateMembers,
+                GenerateDelegates = generateDelegates
+            }));
+            var postprocessor = fixture.Customizations.SingleOrDefault(f => f is Postprocessor) as Postprocessor;
+            if (postprocessor?.Command is CompositeSpecimenCommand command)
             {
                 // Since we are using Virtuosity, we need to exclude virtual methods to be mock by default. 
                 var commands = ((ISpecimenCommand[])command.Commands);
@@ -49,7 +60,8 @@ namespace AutoFixture.Extensions
                 .ToList()
                 .ForEach(b => fixture.Behaviors.Remove(b));
             fixture.Behaviors.Add(new OmitOnRecursionBehavior());
-            
+
+            Instance = fixture;
             return fixture;
         }
     }

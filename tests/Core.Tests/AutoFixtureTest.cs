@@ -19,9 +19,9 @@ namespace AutoFixture.Extensions.Tests
         [Fact]
         public void GetFixture_SingleInstance_ShouldReturnSameInstance()
         {
-            // Should be same instance only when accessing its Factory Getter
-            var i1 = FixtureFactory.Instance;
-            var i2 = FixtureFactory.GetFixture();
+            // Should be same instance only when accessing via FixtureFactory
+            var i1 = FixtureFactory.CreateFixture();
+            var i2 = FixtureFactory.Instance;
 
             i1.Should().BeSameAs(i2);
         }
@@ -32,8 +32,8 @@ namespace AutoFixture.Extensions.Tests
             // Different instances on other accessors
             // See https://github.com/AutoFixture/AutoFixture/issues/1064#issuecomment-409619359
             var i1 = new AutoFixture.Fixture();
-            var i2 = FixtureFactory.Instance;
-            var i3 = FixtureFactory.CreateFixture();
+            var i2 = FixtureFactory.CreateFixture(); // Create separate instance here
+            var i3 = FixtureFactory.Instance;
             var i4 = new AutoMoqDataAttribute().Fixture;
 
             fixture.Should().NotBeSameAs(i1);

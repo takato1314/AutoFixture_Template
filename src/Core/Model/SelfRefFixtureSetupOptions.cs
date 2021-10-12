@@ -21,6 +21,8 @@ namespace AutoFixture.Extensions
 
         #region Properties
 
+        IFixture IFixtureSetupOptions<T>.Fixture { get; set; } = null!;
+
         /// <inheritdoc cref="IFixtureSetupOptions{T}.Object" />
         public T Object { get; internal set; } = null!;
 

@@ -7,6 +7,9 @@ namespace AutoFixture.Extensions
     /// </summary>
     public interface IFixtureSetupOptions<T> where T : class
     {
+        
+        protected IFixture Fixture { get; set; }
+
         /// <summary>
         /// Retrieves the current fixture's object
         /// </summary>

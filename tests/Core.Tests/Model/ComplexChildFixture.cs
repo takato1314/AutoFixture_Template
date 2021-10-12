@@ -25,10 +25,10 @@ namespace AutoFixture.Extensions.Tests
         /// <inheritdoc />
         public ComplexChildFixture(
             IFixture fixture,
-            Func<FixtureSetupOptions<ComplexChild>, FixtureSetupOptions<ComplexChild>> config) : base(fixture, config)
+            Func<FixtureSetupOptions<ComplexChild>, FixtureSetupOptions<ComplexChild>> options) : base(fixture, options)
         {
         }
-
+        
         #region Properties
 
         /// <summary>
@@ -63,10 +63,6 @@ namespace AutoFixture.Extensions.Tests
             ConcurrencyStamp = new Guid("ac8fd90c-f84e-45ff-88b7-0a971db1ddff"),
             Boolean = false,
             Function = _ => "FixtureSetupFunction",
-            StringCollection = new List<string>
-            {
-                "FixtureSetupStringCollection"
-            },
             DictionaryCollection = new Dictionary<string, SimpleChild>
             {
                 { nameof(Tests.SimpleChild), SimpleChild }
@@ -78,10 +74,11 @@ namespace AutoFixture.Extensions.Tests
 
     public class ComplexChildFixtureTest
     {
-        [Theory, AutoMoqData]
+        [Theory, AutoMoqData(false)]
         public Task FixtureSetup_TestEquivalency(IFixture fixture)
         {
             // Arrange
+            fixture.OmitAutoProperties = true;
             var sut = new ComplexChildFixture(fixture)
             {
                 MyNumber = 5566
@@ -133,8 +130,7 @@ namespace AutoFixture.Extensions.Tests
                 instance.ConcurrencyStamp.Should().NotBe(default(Guid));
                 instance.Nullable.Should().NotBeNull();
                 instance.Boolean.Should().BeFalse();
-                instance.StringCollection.Should().NotBeNullOrEmpty();
-                instance.StringCollection.All(_ => !_.IsNullOrEmpty()).Should().BeTrue();
+                instance.StringCollection.Should().BeEmpty();
                 instance.DictionaryCollection.Should().NotBeNullOrEmpty();
                 instance.DictionaryCollection.Should().HaveCount(1);
                 instance.DictionaryCollection[nameof(SimpleChild)].Should().Be(ComplexChildFixture.SimpleChild);

@@ -33,22 +33,29 @@ namespace AutoFixture.Extensions
         /// <inheritdoc cref="BaseFixtureSetup{TFixture}"/>
         protected BaseFixtureSetup(
             IFixture fixture, 
-            Func<FixtureSetupOptions<T>, FixtureSetupOptions<T>> config)
+            Func<FixtureSetupOptions<T>, FixtureSetupOptions<T>> options)
         {
             Fixture = fixture;
             Object = CreateObject();
             Mock = Object.IsMockType() ? Moq.Mock.Get(Object) : null;
-            
-            config(FixtureSetupOptions<T>.CloneDefaults(Object));
+            Options = options;
+
+            Options(FixtureSetupOptions<T>.CloneDefaults(Object));
             _shouldRunSetup = false;
         }
-
+        
         #region Properties
 
         private bool _shouldRunSetup;
         private T _object = null!;
 
-        protected IFixture Fixture { get; }
+        protected IFixture Fixture { get; private set; }
+
+        IFixture IFixtureSetupOptions<T>.Fixture
+        {
+            get => Fixture;
+            set => Fixture = value;
+        }
 
         /// <inheritdoc cref="IFixtureSetup{T}.Object" />
         public T Object {
@@ -64,7 +71,7 @@ namespace AutoFixture.Extensions
                 
                 return _object;
             }
-            set => _object = value;
+            private set => _object = value;
         }
 
         T IFixtureSetupOptions<T>.Object
@@ -83,6 +90,8 @@ namespace AutoFixture.Extensions
             get => Mock;
             set => Mock = value;
         }
+
+        protected Func<FixtureSetupOptions<T>, FixtureSetupOptions<T>>? Options;
 
         #endregion
 
