@@ -22,7 +22,7 @@ namespace AutoFixture.Extensions
         /// </summary>
         public FixtureSetupOptions<T> Setup(Expression<Action<T>> expression, Action action)
         {
-            Mock!.Setup(expression).Callback(action);
+            Mock?.Setup(expression).Callback(action);
             return this;
         }
 
@@ -31,10 +31,10 @@ namespace AutoFixture.Extensions
         /// </summary>
         public FixtureSetupOptions<T> Setup<TResult>(Expression<Func<T, TResult>> expression, TResult value)
         {
-            Mock!.Setup(expression).Returns(value);
+            Mock?.Setup(expression).Returns(value);
             return this;
         }
-
+        
         #region Private
 
         /// <summary>

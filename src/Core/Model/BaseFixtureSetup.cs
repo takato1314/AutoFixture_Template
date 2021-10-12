@@ -38,9 +38,8 @@ namespace AutoFixture.Extensions
             Fixture = fixture;
             Object = CreateObject();
             Mock = Object.IsMockType() ? Moq.Mock.Get(Object) : null;
-            Options = options;
 
-            Options(FixtureSetupOptions<T>.CloneDefaults(Object));
+            options(FixtureSetupOptions<T>.CloneDefaults(Object));
             _shouldRunSetup = false;
         }
         
@@ -57,16 +56,16 @@ namespace AutoFixture.Extensions
             set => Fixture = value;
         }
 
-        /// <inheritdoc cref="IFixtureSetup{T}.Object" />
+        /// <inheritdoc cref="IFixtureSetupOptions{T}.Object" />
         public T Object {
             get
             {
                 // Post-construction
                 // See https://stackoverflow.com/a/46140327
-                if (_shouldRunSetup)
+                if (_shouldRunSetup && Setups != null)
                 {
                     _shouldRunSetup = false;
-                    Setup();
+                    Setups(FixtureSetupOptions<T>.CloneDefaults(Object));
                 }
                 
                 return _object;
@@ -80,9 +79,7 @@ namespace AutoFixture.Extensions
             set => Object = value;
         }
 
-        /// <summary>
-        /// The <see cref="Mock"/> instance for <see cref="Object"/>.
-        /// </summary>
+        /// <inheritdoc cref="IFixtureSetupOptions{T}.Mock"/>
         public Mock<T>? Mock { get; private set; }
 
         Mock<T>? IFixtureSetupOptions<T>.Mock
@@ -91,17 +88,19 @@ namespace AutoFixture.Extensions
             set => Mock = value;
         }
 
-        protected Func<FixtureSetupOptions<T>, FixtureSetupOptions<T>>? Options;
+        /// <inheritdoc cref="IFixtureSetup{T}.Setups"/>
+        protected virtual Func<FixtureSetupOptions<T>, FixtureSetupOptions<T>>? Setups { get; set; }
+
+        Func<FixtureSetupOptions<T>, FixtureSetupOptions<T>>? IFixtureSetup<T>.Setups
+        {
+            get => Setups;
+            set => Setups = value;
+        }
 
         #endregion
 
-        /// <inheritdoc />
-        public virtual void Setup()
-        {
-        }
-
         #region Private
-        
+
         /// <summary>
         /// Inject an instance of <typeparam name="T">object</typeparam> into the current fixture and overrides the <see cref="Object"/> instance. <br/>
         /// Also see <see cref="FixtureRegistrar.Inject{T}"/>.

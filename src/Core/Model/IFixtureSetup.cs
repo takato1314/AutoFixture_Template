@@ -1,4 +1,6 @@
-﻿namespace AutoFixture.Extensions
+﻿using System;
+
+namespace AutoFixture.Extensions
 {
     /// <summary>
     /// Create test fixture objects (aka. <see cref="IFixture"/>) for GREEN and RED cases.
@@ -15,6 +17,6 @@
         /// Setup expected values for Mock or Object.<br/>
         /// <b>Note:</b> This method will always override any previous setups done via ctor when invoked.
         /// </summary>
-        public void Setup();
+        protected Func<FixtureSetupOptions<T>, FixtureSetupOptions<T>>? Setups { get; set; }
     }
 }

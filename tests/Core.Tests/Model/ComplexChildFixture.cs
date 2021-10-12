@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using AutoMapper;
 using Castle.Core.Internal;
 using FluentAssertions;
 using Moq;
@@ -30,29 +29,14 @@ namespace AutoFixture.Extensions.Tests
         }
         
         #region Properties
-
+        
         /// <summary>
         /// Additional properties are introduced to allow direct configurations on Mock/Object values for different test cases. <br/>
         /// <b>E.g.</b> Fixture for HttpRequest may have same 'User' and 'Host' values, but may need to return different 'Content' and 'StatusCode'
         /// on different use cases.
         /// </summary>
         public int MyNumber { get; set; }
-
-        #endregion
-
-        public sealed override void Setup()
-        {
-            // We use mapper to do one-to-one mapping for unit testing.
-            // Do use object assignments and set Moq expectations to override their default values.
-            var mapper = new Mapper(new MapperConfiguration(m => { m.CreateMap<ComplexChild, ComplexChild>(); }));
-            mapper.Map(Instance, Object);
-
-            // Instead use assignments or mock setups as follows
-            Object.Number = MyNumber;
-        }
-
-        #region Properties
-
+        
         // For unit test comparisons
         internal static readonly SimpleChild SimpleChild = new(nameof(Tests.SimpleChild), 100);
         internal static readonly ComplexChild Instance = new()
@@ -69,6 +53,16 @@ namespace AutoFixture.Extensions.Tests
             }
         };
 
+        protected override Func<FixtureSetupOptions<ComplexChild>, FixtureSetupOptions<ComplexChild>> Setups =>
+            options => options
+                .Setup(_ => _.Name, Instance.Name)
+                .Setup(_ => _.Number, MyNumber)
+                .Setup(_ => _.Nullable, Instance.Nullable)
+                .Setup(_ => _.ConcurrencyStamp, Instance.ConcurrencyStamp)
+                .Setup(_ => _.Boolean, Instance.Boolean)
+                .Setup(_ => _.Function, Instance.Function)
+                .Setup(_ => _.DictionaryCollection, Instance.DictionaryCollection);
+
         #endregion
     }
 
@@ -78,7 +72,6 @@ namespace AutoFixture.Extensions.Tests
         public Task FixtureSetup_TestEquivalency(IFixture fixture)
         {
             // Arrange
-            fixture.OmitAutoProperties = true;
             var sut = new ComplexChildFixture(fixture)
             {
                 MyNumber = 5566
@@ -98,11 +91,12 @@ namespace AutoFixture.Extensions.Tests
             // Should be same, because the fixture share the same instance.
             i1.Should().BeSameAs(i2);
             i1.Should().BeEquivalentTo(ComplexChildFixture.Instance);
+            i1.StringCollection.Should().BeEmpty();
 
             // Should be a mock
             Mock.Get(i1).Should().NotBeNull();
             Mock.Get(i2).Should().NotBeNull();
-            i2.IsMockType().Should().BeTrue();
+            i1.IsMockType().Should().BeTrue();
             sut.Mock.Should().BeSameAs(Mock.Get(i1));
 
             return Task.CompletedTask;
@@ -124,13 +118,13 @@ namespace AutoFixture.Extensions.Tests
             {
                 instance.Should().NotBeNull();
                 instance.IsMockType().Should().BeTrue();
-                instance.Should().BeEquivalentTo(ComplexChildFixture.Instance);
+                instance.Should().NotBeEquivalentTo(ComplexChildFixture.Instance);
                 instance.Name.Should().NotBeNullOrEmpty();
                 instance.Number.Should().Be(5566);
                 instance.ConcurrencyStamp.Should().NotBe(default(Guid));
                 instance.Nullable.Should().NotBeNull();
                 instance.Boolean.Should().BeFalse();
-                instance.StringCollection.Should().BeEmpty();
+                instance.StringCollection.Should().NotBeNullOrEmpty();
                 instance.DictionaryCollection.Should().NotBeNullOrEmpty();
                 instance.DictionaryCollection.Should().HaveCount(1);
                 instance.DictionaryCollection[nameof(SimpleChild)].Should().Be(ComplexChildFixture.SimpleChild);
