@@ -9,22 +9,31 @@ namespace AutoFixture.Extensions
         where TSelf : SelfRefFixtureSetupOptions<TSelf, T>
         where T: class
     {
-        protected SelfRefFixtureSetupOptions()
+        protected SelfRefFixtureSetupOptions(IFixture fixture, T obj)
         {
+            Fixture = fixture;
+            Object = obj;
         }
 
         protected SelfRefFixtureSetupOptions(IFixtureSetupOptions<T> defaults)
         {
             Object = defaults.Object;
             Mock = Object.IsMockType() ? Moq.Mock.Get(Object) : null;
+            Fixture = defaults.Fixture;
         }
 
         #region Properties
 
-        IFixture IFixtureSetupOptions<T>.Fixture { get; set; } = null!;
+        public IFixture Fixture { get; set; }
+
+        IFixture IFixtureSetupOptions<T>.Fixture
+        {
+            get => Fixture;
+            set => Fixture = value;
+        }
 
         /// <inheritdoc cref="IFixtureSetupOptions{T}.Object" />
-        public T Object { get; internal set; } = null!;
+        public T Object { get; internal set; }
 
         /// <inheritdoc cref="IFixtureSetupOptions{T}.Mock" />
         public Mock<T>? Mock { get; internal set; }

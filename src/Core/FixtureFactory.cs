@@ -21,12 +21,6 @@ namespace AutoFixture.Extensions
         /// </summary>
         public static IFixture Instance { get; private set; } = CreateFixture();
 
-        /// <inheritdoc cref="AutoMoqCustomization.ConfigureMembers"/>
-        public static bool GenerateMembers { get; set; } = true;
-
-        /// <inheritdoc cref="AutoMoqCustomization.GenerateDelegates"/>
-        public static bool GenerateDelegates { get; set; } = true;
-
         #endregion
 
         /// <summary>
@@ -49,7 +43,7 @@ namespace AutoFixture.Extensions
             var postprocessor = fixture.Customizations.SingleOrDefault(f => f is Postprocessor) as Postprocessor;
             if (postprocessor?.Command is CompositeSpecimenCommand command)
             {
-                // Since we are using Virtuosity, we need to exclude virtual methods to be mock by default. 
+                // Since we may have classes with virtual method or be using Virtuosity, we need to exclude virtual methods to be mock by default. 
                 var commands = ((ISpecimenCommand[])command.Commands);
                 var index = Array.IndexOf(commands, commands.Single(c => c is MockVirtualMethodsCommand));
                 commands[index] = new MocksVirtualMethodsCommand();

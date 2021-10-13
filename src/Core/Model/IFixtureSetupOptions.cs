@@ -8,7 +8,10 @@ namespace AutoFixture.Extensions
     public interface IFixtureSetupOptions<T> where T : class
     {
         
-        protected IFixture Fixture { get; set; }
+        /// <summary>
+        /// The current <see cref="IFixture"/> instance referenced.
+        /// </summary>
+        internal IFixture Fixture { get; set; }
 
         /// <summary>
         /// Retrieves the current fixture's object
@@ -18,6 +21,6 @@ namespace AutoFixture.Extensions
         /// <summary>
         /// The <see cref="Moq.Mock"/> for the <see cref="Object"/> object if it's available.
         /// </summary>
-        public Mock<T>? Mock { get; internal set; }
+        public Mock<T> Mock { get; internal set; }
     }
 }

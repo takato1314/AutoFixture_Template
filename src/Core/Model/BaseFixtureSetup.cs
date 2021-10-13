@@ -1,4 +1,5 @@
 ﻿using System;
+using AutoFixture.AutoMoq;
 using EnsureThat;
 using Moq;
 
@@ -14,7 +15,7 @@ namespace AutoFixture.Extensions
         {
             Fixture = fixture;
             Object = CreateObject();
-            Mock = Object.IsMockType() ? Moq.Mock.Get(Object) : null;
+            Mock = Moq.Mock.Get(Object);
 
             _shouldRunSetup = true;
         }
@@ -24,8 +25,11 @@ namespace AutoFixture.Extensions
             IFixture fixture,
             T item)
         {
+            Ensure.Any.IsNotNull(item);
             Fixture = fixture;
-            Inject(item);
+            Object = item;
+            Mock = item.IsMockType() ? Moq.Mock.Get(item) : null!;
+            Fixture.Inject(item);
 
             _shouldRunSetup = false;
         }
@@ -37,9 +41,9 @@ namespace AutoFixture.Extensions
         {
             Fixture = fixture;
             Object = CreateObject();
-            Mock = Object.IsMockType() ? Moq.Mock.Get(Object) : null;
+            Mock = Moq.Mock.Get(Object);
 
-            options(FixtureSetupOptions<T>.CloneDefaults(Object));
+            options(FixtureSetupOptions<T>.CloneDefaults(Fixture, Object));
             _shouldRunSetup = false;
         }
         
@@ -65,7 +69,7 @@ namespace AutoFixture.Extensions
                 if (_shouldRunSetup && Setups != null)
                 {
                     _shouldRunSetup = false;
-                    Setups(FixtureSetupOptions<T>.CloneDefaults(Object));
+                    Setups(FixtureSetupOptions<T>.CloneDefaults(Fixture, Object));
                 }
                 
                 return _object;
@@ -80,9 +84,9 @@ namespace AutoFixture.Extensions
         }
 
         /// <inheritdoc cref="IFixtureSetupOptions{T}.Mock"/>
-        public Mock<T>? Mock { get; private set; }
+        public Mock<T> Mock { get; private set; }
 
-        Mock<T>? IFixtureSetupOptions<T>.Mock
+        Mock<T> IFixtureSetupOptions<T>.Mock
         {
             get => Mock;
             set => Mock = value;
@@ -96,23 +100,16 @@ namespace AutoFixture.Extensions
             get => Setups;
             set => Setups = value;
         }
+        
+        /// <inheritdoc cref="AutoMoqCustomization.ConfigureMembers"/>
+        public bool GenerateMembers { get; set; } = true;
+
+        /// <inheritdoc cref="AutoMoqCustomization.GenerateDelegates"/>
+        public bool GenerateDelegates { get; set; } = true;
 
         #endregion
 
         #region Private
-
-        /// <summary>
-        /// Inject an instance of <typeparam name="T">object</typeparam> into the current fixture and overrides the <see cref="Object"/> instance. <br/>
-        /// Also see <see cref="FixtureRegistrar.Inject{T}"/>.
-        /// </summary>
-        protected void Inject(T item)
-        {
-            Ensure.Any.IsNotNull(item);
-
-            Object = item;
-            Mock = item.IsMockType() ? Moq.Mock.Get(item) : null;
-            Fixture.Inject(item);
-        }
 
         /// <summary>
         /// Initialize a fixture instance for the <see cref="Object"/>.
