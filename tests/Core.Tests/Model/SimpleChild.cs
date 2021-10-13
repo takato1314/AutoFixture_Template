@@ -30,6 +30,6 @@ namespace AutoFixture.Extensions.Tests
         public int Number { get; set; } = 123;
 
         /// <inheritdoc />
-        public Guid ConcurrencyStamp { get; set; } = Guid.NewGuid();
+        public Guid ConcurrencyStamp { get; set; } = new("e8ccdea7-df59-49ff-8109-03dfb6f798e8");
     }
 }
