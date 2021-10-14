@@ -101,12 +101,6 @@ namespace AutoFixture.Extensions
             set => Setups = value;
         }
         
-        /// <inheritdoc cref="AutoMoqCustomization.ConfigureMembers"/>
-        public bool GenerateMembers { get; set; } = true;
-
-        /// <inheritdoc cref="AutoMoqCustomization.GenerateDelegates"/>
-        public bool GenerateDelegates { get; set; } = true;
-
         #endregion
 
         #region Private

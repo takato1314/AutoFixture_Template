@@ -23,7 +23,7 @@ namespace AutoFixture.Extensions
         }
 
         /// <inheritdoc cref="MocksRelay"/>
-        public MocksRelay(IRequestSpecification mockableSpecification) => MockableSpecification = mockableSpecification ?? throw new ArgumentNullException(nameof(mockableSpecification));
+        public MocksRelay(IRequestSpecification specification) => Specification = specification ?? throw new ArgumentNullException(nameof(specification));
 
         #endregion
 
@@ -46,7 +46,7 @@ namespace AutoFixture.Extensions
         /// </para>
         /// </remarks>
         /// <seealso cref="M:AutoFixture.AutoMoq.MockRelay.#ctor(AutoFixture.Kernel.IRequestSpecification)" />
-        public IRequestSpecification MockableSpecification { get; }
+        public IRequestSpecification Specification { get; }
 
         #endregion
 
@@ -54,13 +54,13 @@ namespace AutoFixture.Extensions
         {
             Ensure.Any.IsNotNull(context);
 
-            if (!MockableSpecification.IsSatisfiedBy(request))
+            if (!Specification.IsSatisfiedBy(request))
                 return new NoSpecimen();
 
             if (request is not Type t)
                 return new NoSpecimen();
 
-            object obj = ResolveMock(t, context);
+            object obj = ResolveObject(t, context);
             switch (obj)
             {
                 case NoSpecimen _:
@@ -76,7 +76,7 @@ namespace AutoFixture.Extensions
 
         #region Private
 
-        private static object ResolveMock(Type t, ISpecimenContext context)
+        private object ResolveObject(Type t, ISpecimenContext context)
         {
             if (t.IsGenericType)
             {

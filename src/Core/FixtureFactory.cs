@@ -34,11 +34,7 @@ namespace AutoFixture.Extensions
             var defaultEngine = new FilteringRelays(ConcreteFilter);
 
             // Customizations
-            var fixture = new Fixture(defaultEngine).Customize(new CompositeCustomization(new AutoPopulatedMoqCustomization
-            {
-                ConfigureMembers = generateMembers,
-                GenerateDelegates = generateDelegates
-            }));
+            var fixture = new Fixture(defaultEngine).Customize(new CompositeCustomization(new AutoPopulatedMoqCustomization(generateMembers, generateDelegates)));
             var postprocessor = fixture.Customizations.SingleOrDefault(f => f is Postprocessor) as Postprocessor;
             if (postprocessor?.Command is CompositeSpecimenCommand command)
             {

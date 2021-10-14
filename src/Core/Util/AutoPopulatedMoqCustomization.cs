@@ -9,11 +9,13 @@ namespace AutoFixture.Extensions
     /// </summary>
     public class AutoPopulatedMoqCustomization : AutoMoqCustomization
     {
-        public AutoPopulatedMoqCustomization()
+        public AutoPopulatedMoqCustomization(
+            bool configureMembers = true, 
+            bool generateDelegates = true)
         {
             Relay = new MocksRelay();
-            ConfigureMembers = true;
-            GenerateDelegates = true;
+            ConfigureMembers = configureMembers;
+            GenerateDelegates = generateDelegates;
         }
     }
 }
