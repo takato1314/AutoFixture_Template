@@ -5,14 +5,13 @@ using AutoFixture.AutoMoq;
 using AutoFixture.Kernel;
 
 [assembly: InternalsVisibleTo("AutoFixture.Extensions.Tests")]
-[assembly: InternalsVisibleTo("DynamicProxyGenAssembly2")]
 namespace AutoFixture.Extensions
 {
     /// <summary>
     /// Factory method to declare a single <see cref="IFixture"/> for unit tests applications. <br/>
     /// See https://autofixture.github.io.
     /// </summary>
-    public static class FixtureFactory
+    internal static class FixtureFactory
     {
         #region Properties
 

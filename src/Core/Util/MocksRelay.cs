@@ -18,7 +18,7 @@ namespace AutoFixture.Extensions
         /// <summary>
         /// Initializes a new instance of the <see cref="T:AutoFixture.AutoMoq.MockRelay" /> class.
         /// </summary>
-        public MocksRelay() : this(new IsMockableSpecification())
+        public MocksRelay() : this(new IsTypeSpecification())
         {
         }
 
@@ -138,7 +138,7 @@ namespace AutoFixture.Extensions
             return specimen;
         }
 
-        private class IsMockableSpecification : IRequestSpecification
+        private class IsTypeSpecification : IRequestSpecification
         {
             public bool IsSatisfiedBy(object request)
             {
