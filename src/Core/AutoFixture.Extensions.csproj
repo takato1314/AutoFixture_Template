@@ -4,7 +4,7 @@
     <ProjectGuid>{2D00E58A-FEF1-4CB5-8807-346FF08F6EF6}</ProjectGuid>
     <AssemblyName>AutoFixture.Extensions</AssemblyName>
     <RootNamespace>AutoFixture.Extensions</RootNamespace>
-    <TargetFramework>net5.0</TargetFramework>
+    <TargetFrameworks>net6.0;net5.0</TargetFrameworks>
     <Platforms>AnyCPU</Platforms>
     <LangVersion>latest</LangVersion>
     <Nullable>enable</Nullable>
@@ -22,10 +22,10 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="AutoMapper" Version="10.1.1" />
+    <PackageReference Include="AutoMapper" Version="11.0.0" />
     <PackageReference Include="Ensure.That" Version="10.1.0" />
-    <PackageReference Include="FluentAssertions" Version="6.2.0" />
-    <PackageReference Include="GitVersion.MsBuild" Version="5.7.0">
+    <PackageReference Include="FluentAssertions" Version="6.3.0" />
+    <PackageReference Include="GitVersion.MsBuild" Version="5.8.1">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
@@ -37,7 +37,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Update="SonarAnalyzer.CSharp" Version="8.30.0.37606" />
+    <PackageReference Update="SonarAnalyzer.CSharp" Version="8.29.0.36737" />
   </ItemGroup>
 
 </Project>
